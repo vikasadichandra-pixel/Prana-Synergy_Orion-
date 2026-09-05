@@ -1,0 +1,185 @@
+.drone-exploder-container {
+    /* 250vh to give enough scroll distance */
+    height: 250vh; 
+    width: 100%;
+    position: relative;
+    background-color: #030705;
+    color: #fff;
+    font-family: 'DM Mono', 'Rajdhani', 'Share Tech Mono', monospace;
+    overflow: clip;
+}
+
+.drone-sticky-wrapper {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(ellipse at 50% 45%, #0a1f12 0%, #050a07 50%, #030705 100%);
+}
+
+.drone-hud {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    z-index: 10;
+    font-family: 'DM Mono', 'Courier New', monospace;
+    pointer-events: none;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.drone-hud-title {
+    font-size: 0.75rem;
+    color: #58d3ff;
+    letter-spacing: 4px;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 15px rgba(88, 211, 255, 0.4);
+    font-weight: bold;
+}
+
+.drone-hud-phase {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    line-height: 1.1;
+}
+
+.drone-hud-detail {
+    font-size: 0.85rem;
+    color: #c9e87b;
+    letter-spacing: 2px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(201, 232, 123, 0.3);
+}
+
+.drone-env-panel {
+    position: absolute;
+    top: 50px;
+    right: 50px;
+    z-index: 10;
+    pointer-events: none;
+    border: 1px solid rgba(255,129,88,0.5);
+    padding: 16px 20px;
+    border-radius: 4px;
+    background: rgba(10,13,13,0.85);
+    backdrop-filter: blur(8px);
+    font-family: 'DM Mono', monospace;
+    max-width: 280px;
+}
+
+.drone-count-panel {
+    position: absolute;
+    top: 210px;
+    right: 50px;
+    z-index: 10;
+    pointer-events: none;
+    border: 1px solid rgba(201,232,123,0.4);
+    padding: 12px 18px;
+    border-radius: 4px;
+    background: rgba(10,13,13,0.85);
+    backdrop-filter: blur(8px);
+    font-family: 'DM Mono', monospace;
+}
+
+.drone-legend {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    gap: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+}
+
+/* Background grid overlay */
+.drone-sticky-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+        linear-gradient(rgba(88, 211, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88, 211, 255, 0.025) 1px, transparent 1px);
+    background-size: 50px 50px;
+    background-position: center center;
+    z-index: 0;
+    pointer-events: none;
+    mask-image: radial-gradient(circle at center, black 15%, transparent 70%);
+    -webkit-mask-image: radial-gradient(circle at center, black 15%, transparent 70%);
+}
+
+.generative-layers-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* THE MAGIC HACK: mix-blend-mode: screen */
+.gen-layer {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 80vw;
+    max-height: 80vh;
+    object-fit: contain;
+    will-change: transform;
+    mix-blend-mode: screen;
+    filter: drop-shadow(0 0 20px rgba(0,0,0,0.5)); /* Adds a bit of depth */
+}
+
+/* Base specific overrides to make them look somewhat aligned when fully assembled */
+.gen-crown {
+    width: 800px;
+    margin-top: -60px;
+}
+
+.gen-core {
+    width: 900px;
+}
+
+.gen-power {
+    width: 700px;
+    margin-top: 60px;
+}
+
+.gen-ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+    will-change: opacity;
+    opacity: 0;
+}
+
+@media (max-width: 900px) {
+    .drone-hud {
+        top: 20px;
+        left: 16px;
+    }
+    .drone-hud-phase {
+        font-size: 1.2rem;
+    }
+    .drone-env-panel, .drone-count-panel, .drone-legend {
+        display: none;
+    }
+}

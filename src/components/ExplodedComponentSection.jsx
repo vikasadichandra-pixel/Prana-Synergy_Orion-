@@ -101,7 +101,7 @@ export default function ExplodedComponentSection({ scene }) {
     return () => observer.disconnect();
   }, []);
 
-  // We will now track internal scroll progress manually via a wheel listener on the visual stage
+  // Track global scroll progress over this section natively
   const [internalScroll, setInternalScroll] = useState(0);
   const targetScrollRef = useRef(0);
   const currentScrollRef = useRef(0);
@@ -111,71 +111,42 @@ export default function ExplodedComponentSection({ scene }) {
   useEffect(() => {
     if (!isHardware) return;
     
-    const el = visualStageRef.current;
-    if (!el) return;
+    const container = ref.current;
+    if (!container) return;
 
-    const startLerp = () => {
-      if (rafRef.current) return; // loop is already running
+    const handleScroll = () => {
+      const rect = container.getBoundingClientRect();
+      const scrollable = container.scrollHeight - window.innerHeight;
+      if (scrollable <= 0) return;
+      const scrolled = -rect.top;
+      targetScrollRef.current = Math.max(0, Math.min(1, scrolled / scrollable));
+    };
 
-      const loop = () => {
-        const diff = targetScrollRef.current - currentScrollRef.current;
-        // If we are close enough, snap and stop animating
-        if (Math.abs(diff) < 0.5) {
-          currentScrollRef.current = targetScrollRef.current;
-          setInternalScroll(currentScrollRef.current);
-          rafRef.current = null;
-          return;
-        }
-
-        // Exponential ease-out (butter smooth lerp)
-        currentScrollRef.current += diff * 0.08;
-        setInternalScroll(currentScrollRef.current);
-        rafRef.current = requestAnimationFrame(loop);
-      };
-      
+    const loop = () => {
+      currentScrollRef.current += (targetScrollRef.current - currentScrollRef.current) * 0.08;
+      setInternalScroll(currentScrollRef.current);
       rafRef.current = requestAnimationFrame(loop);
     };
 
-    const handleWheel = (e) => {
-      // NEVER scroll the page when hovering over the visual stage
-      e.preventDefault();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    rafRef.current = requestAnimationFrame(loop);
 
-      const prev = targetScrollRef.current;
-      const next = prev + e.deltaY * 1.5; // adjust sensitivity
-      const maxScroll = 1500; // total "scroll" distance to fully explode
-
-      if (next <= 0 && e.deltaY < 0) {
-        targetScrollRef.current = 0;
-        startLerp();
-        return;
-      }
-      
-      if (next >= maxScroll && e.deltaY > 0) {
-        targetScrollRef.current = maxScroll;
-        startLerp();
-        return;
-      }
-
-      targetScrollRef.current = Math.max(0, Math.min(maxScroll, next));
-      startLerp();
-    };
-
-    el.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
-      el.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('scroll', handleScroll);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [isHardware]);
 
-  const progress = isHardware ? internalScroll / 1500 : 0;
+  const progress = isHardware ? internalScroll : 0;
 
   return (
     <section
       ref={ref}
       className={`scene ${active ? 'active' : ''}`}
-      style={isHardware ? { minHeight: '100vh', padding: '10vh 0' } : {}}
+      style={isHardware ? { height: '250vh', position: 'relative' } : {}}
     >
-      <div className="scene-sticky" style={isHardware ? { position: 'relative', height: 'auto' } : {}}>
+      <div className="scene-sticky" style={isHardware ? { position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' } : {}}>
         <div className="scene-grid" />
         <div className="scene-content">
           {/* Left Side: Technical Copy & Dynamic Sequence Status */}
@@ -197,7 +168,7 @@ export default function ExplodedComponentSection({ scene }) {
             <small style={{ marginTop: '24px' }}>
               <ArrowDown size={14} />
               {isHardware
-                ? 'HOVER OVER COMPONENT AND SCROLL TO EXPLODE'
+                ? 'SCROLL TO EXPLODE COMPONENT'
                 : 'SCROLL TO PROGRESS SUBSYSTEMS'}
             </small>
           </div>
