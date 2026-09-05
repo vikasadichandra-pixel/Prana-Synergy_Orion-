@@ -1,0 +1,8 @@
+{
+  "name": "Nexus Hardware Architecture",
+  "description": "A component-by-component engineering inspection of the complete hardware system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
