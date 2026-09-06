@@ -1,6 +1,7 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { layoutExplodedParts } from '../lib/explodedLayout';
+﻿import React, { useState, useRef, useLayoutEffect, useCallback } from 'react';
 
-const RFSENSOR_PARTS_CONFIG = [
+const RFSENSOR_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'rf_shield',
     name: 'NICKEL-SILVER RF SHIELDING CAN',
@@ -45,7 +46,7 @@ const RFSENSOR_PARTS_CONFIG = [
     step: 3,
     line: { x1: 520, y1: 300, x2: 'left', y2: 300 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -67,7 +68,7 @@ export default function RfSensorExplodedView({ scrollProgress = 0, isSceneActive
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
     lastProgressRef.current = progress;
 
@@ -204,7 +205,7 @@ export default function RfSensorExplodedView({ scrollProgress = 0, isSceneActive
 
           {/* Dynamic Laser Projection Lines */}
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
-            {RFSENSOR_PARTS_CONFIG.map((part) => {
+            {[...RFSENSOR_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               const subP = smoothSubProgress(progress, part.start, part.end);
               if (subP <= 0.02) return null;
@@ -227,7 +228,7 @@ export default function RfSensorExplodedView({ scrollProgress = 0, isSceneActive
               const marker = isOrange ? 'url(#rf-marker-orange)' : 'url(#rf-marker-lime)';
 
               return (
-                <g ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0" key={`line-${part.id}`}>
+                <g ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0" key={`line-${part.id}`} data-wire-id={part.id}>
                   <line
                     x1={x1}
                     y1={y1}
@@ -246,7 +247,7 @@ export default function RfSensorExplodedView({ scrollProgress = 0, isSceneActive
           </g>
 
           {/* Physical Discrete Parts */}
-          {RFSENSOR_PARTS_CONFIG.map((part) => {
+          {[...RFSENSOR_PARTS_CONFIG].reverse().map((part) => {
             const subP = smoothSubProgress(progress, part.start, part.end);
             const currentX = part.assembled.x + (part.exploded.x - part.assembled.x) * subP;
             const currentY = part.assembled.y + (part.exploded.y - part.assembled.y) * subP;
@@ -254,7 +255,7 @@ export default function RfSensorExplodedView({ scrollProgress = 0, isSceneActive
 
             return (
               <g
-                key={part.id}
+                key={part.id} data-part-id={part.id}
                 onMouseEnter={() => setHoveredPart(part.id)}
                 onMouseLeave={() => setHoveredPart(null)}
                 style={{ cursor: 'pointer', willChange: 'transform', filter: isHovered ? 'drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15)' : 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))', transition: 'filter 0.15s ease-out' }}
@@ -386,7 +387,7 @@ export default function RfSensorExplodedView({ scrollProgress = 0, isSceneActive
             >
               {hoveredPart
                 ? RFSENSOR_PARTS_CONFIG.find((p) => p.id === hoveredPart)?.name
-                : 'RF SENSOR SYSTEM Â· 3 DISCRETE PHYSICAL LAYERS'}
+                : 'RF SENSOR SYSTEM · 3 DISCRETE PHYSICAL LAYERS'}
             </div>
             <div
               style={{

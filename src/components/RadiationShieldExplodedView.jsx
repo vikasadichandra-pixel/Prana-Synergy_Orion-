@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { layoutExplodedParts } from '../lib/explodedLayout';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 
-const RAD_PARTS_CONFIG = [
+const RAD_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'rad_outer',
     name: 'TUNGSTEN SHIELD',
@@ -45,7 +46,7 @@ const RAD_PARTS_CONFIG = [
     step: 3,
     line: { x1: 510, y1: 300, x2: 'left', y2: 300 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -67,7 +68,7 @@ export default function RadiationShieldExplodedView({ scrollProgress = 0 }) {
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
   // Direct DOM mutation for transforms (bypass React render cycle)
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
     lastProgressRef.current = progress;
 
@@ -150,10 +151,10 @@ export default function RadiationShieldExplodedView({ scrollProgress = 0 }) {
 
           {/* Lines */}
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
-            {RAD_PARTS_CONFIG.map((part) => {
+            {[...RAD_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               return (
-                <g key={`line-${part.id}`} ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0">
+                <g key={`line-${part.id}`} data-wire-id={part.id} ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0">
                   <line x1={part.assembled.x} y1={part.line.y1} x2={part.assembled.x} y2={part.line.y2} stroke="#e87bc9" strokeWidth="2.5" strokeDasharray="6 5" strokeOpacity={0.75} markerStart="url(#rad-marker-pink)" markerEnd="url(#rad-marker-pink)" />
                 </g>
               );
@@ -161,11 +162,11 @@ export default function RadiationShieldExplodedView({ scrollProgress = 0 }) {
           </g>
 
           {/* Parts */}
-          {RAD_PARTS_CONFIG.map((part) => {
+          {[...RAD_PARTS_CONFIG].reverse().map((part) => {
             const isHovered = hoveredPart === part.id;
             return (
               <g 
-                key={part.id} 
+                key={part.id} data-part-id={part.id}
                 onMouseEnter={() => setHoveredPart(part.id)} 
                 onMouseLeave={() => setHoveredPart(null)} 
                 ref={(el) => { partGroupRefs.current[part.id] = el; }}

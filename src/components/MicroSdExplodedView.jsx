@@ -1,9 +1,10 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { layoutExplodedParts } from '../lib/explodedLayout';
+﻿import React, { useState, useRef, useLayoutEffect, useCallback } from 'react';
 
 // SanDisk Extreme PRO MicroSD card physical discrete parts
 // Coordinates in 1200 x 650 artboard:
 // Assembled center: X: 480, Y: 180, W: 240, h: 320
-const MICROSD_PARTS_CONFIG = [
+const MICROSD_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'sd_faceplate',
     name: 'FRONT BRANDED FACEPLATE / TOP CASING',
@@ -82,7 +83,7 @@ const MICROSD_PARTS_CONFIG = [
     id: 'sd_contact_pins',
     name: '8-PIN GOLD CONTACT INTERFACE ARRAY',
     code: 'CONN-SD-8P-AU-FINGERS',
-    spec: '30Î¼m hard gold-plated 8-pin UHS-I bus interface fingers (DAT0-DAT3, CLK, CMD, VDD, VSS)',
+    spec: '30μm hard gold-plated 8-pin UHS-I bus interface fingers (DAT0-DAT3, CLK, CMD, VDD, VSS)',
     role: 'HIGH-SPEED PHYSICAL HOST BUS',
     w: 130,
     h: 190,
@@ -108,7 +109,7 @@ const MICROSD_PARTS_CONFIG = [
     step: 7,
     line: { x1: 530, y1: 317, x2: 'left', y2: 317 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -130,7 +131,7 @@ export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive 
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
   // Direct DOM mutation for transforms (bypass React render cycle)
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
     lastProgressRef.current = progress;
 
@@ -287,7 +288,7 @@ export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive 
 
           {/* Dynamic Laser Projection Lines */}
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
-            {MICROSD_PARTS_CONFIG.map((part) => {
+            {[...MICROSD_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               const subP = smoothSubProgress(progress, part.start, part.end);
               if (subP <= 0.02) return null;
@@ -310,7 +311,7 @@ export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive 
               const marker = isOrange ? 'url(#sd-marker-orange)' : 'url(#sd-marker-lime)';
 
               return (
-                <g ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0" key={`line-${part.id}`}>
+                <g ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0" key={`line-${part.id}`} data-wire-id={part.id}>
                   <line
                     x1={x1}
                     y1={y1}
@@ -329,7 +330,7 @@ export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive 
           </g>
 
           {/* 7 Physical Discrete MicroSD Parts */}
-          {MICROSD_PARTS_CONFIG.map((part) => {
+          {[...MICROSD_PARTS_CONFIG].reverse().map((part) => {
             const subP = smoothSubProgress(progress, part.start, part.end);
             const currentX = part.assembled.x + (part.exploded.x - part.assembled.x) * subP;
             const currentY = part.assembled.y + (part.exploded.y - part.assembled.y) * subP;
@@ -337,7 +338,7 @@ export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive 
 
             return (
               <g
-                key={part.id}
+                key={part.id} data-part-id={part.id}
                 onMouseEnter={() => setHoveredPart(part.id)}
                 onMouseLeave={() => setHoveredPart(null)}
                 style={{ cursor: 'pointer', willChange: 'transform', filter: isHovered ? 'drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15)' : 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))', transition: 'filter 0.15s ease-out' }}
@@ -384,7 +385,7 @@ export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive 
                         microSD XC I
                       </text>
                       <text x="24" y="152" fill="url(#sd-gold-foil)" fontFamily="'DM Mono', monospace" fontWeight="700" fontSize="11">
-                        [3] A2 Â· V30
+                        [3] A2 · V30
                       </text>
                       {/* Grip notch */}
                       <path d={`M ${part.w / 2 - 12},${part.h - 14} L ${part.w / 2 + 12},${part.h - 14} L ${part.w / 2},${part.h - 4} Z`} fill="#2d3035" />
@@ -555,7 +556,7 @@ export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive 
             >
               {hoveredPart
                 ? MICROSD_PARTS_CONFIG.find((p) => p.id === hoveredPart)?.name
-                : 'MICROSD HARDWARE DECOMPOSITION Â· 7 DISCRETE PHYSICAL LAYERS'}
+                : 'MICROSD HARDWARE DECOMPOSITION · 7 DISCRETE PHYSICAL LAYERS'}
             </div>
             <div
               style={{

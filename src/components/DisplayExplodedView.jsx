@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { layoutExplodedParts } from '../lib/explodedLayout';
+import React, { useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 
 // 2.8" ILI9341 SPI TFT Display Module — physical discrete parts
 // Coordinates in 1200 x 600 artboard
-const DISPLAY_PARTS_CONFIG = [
+const DISPLAY_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'disp_bezel',
     name: 'FRONT PROTECTIVE BEZEL',
@@ -77,7 +78,7 @@ const DISPLAY_PARTS_CONFIG = [
     step: 5,
     line: { x1: 520, y1: 300, x2: 'left', y2: 300 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -200,7 +201,7 @@ export default function DisplayExplodedView({ scrollProgress = 0, isSceneActive 
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
   // —— DIRECT DOM ANIMATION (runs outside React render) ——
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
     lastProgressRef.current = progress;
 
@@ -338,14 +339,14 @@ export default function DisplayExplodedView({ scrollProgress = 0, isSceneActive 
 
           {/* Dynamic Laser Projection Lines — DOM-mutated */}
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
-            {DISPLAY_PARTS_CONFIG.map((part) => {
+            {[...DISPLAY_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               const isRight = part.line.x1 === 'right';
               const color = isRight ? '#58d6ff' : '#ffb347';
               const marker = isRight ? 'url(#disp-marker-cyan)' : 'url(#disp-marker-amber)';
               return (
                 <g
-                  key={`line-${part.id}`}
+                  key={`line-${part.id}`} data-wire-id={part.id}
                   ref={(el) => { lineGroupRefs.current[part.id] = el; }}
                   opacity="0"
                 >
@@ -367,13 +368,13 @@ export default function DisplayExplodedView({ scrollProgress = 0, isSceneActive 
           </g>
 
           {/* 5 Physical Discrete Display Parts — transforms mutated via ref */}
-          {DISPLAY_PARTS_CONFIG.map((part) => {
+          {[...DISPLAY_PARTS_CONFIG].reverse().map((part) => {
             const isHovered = hoveredPart === part.id;
             const PartRenderer = PART_RENDERERS[part.id];
 
             return (
               <g
-                key={part.id}
+                key={part.id} data-part-id={part.id}
                 ref={(el) => { partGroupRefs.current[part.id] = el; }}
                 transform={`translate(${part.assembled.x}, ${part.assembled.y})`}
                 onMouseEnter={() => handleMouseEnter(part.id)}

@@ -1,43 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ChevronDown, Cpu, Layers3 } from 'lucide-react';
 import { scenes } from './data/scenes';
 import ExplodedComponentSection from './components/ExplodedComponentSection';
-import MasterDroneExploder from './components/MasterDroneExploder';
+import MasterDroneExploder from './components/PranaWebGL';
 import Preloader from './components/Preloader';
+import useSteadyScroll from './hooks/useSteadyScroll';
 import './styles.css';
+import './prana-theme.css';
 
 function App() {
-  const [loaded, setLoaded] = useState(false);
+  const [introPhase, setIntroPhase] = useState('loading');
+  useSteadyScroll(introPhase==='ready');
 
-  // Optional: Ensure minimum show time for brand impression (e.g., 2.5s total)
-  useEffect(() => {
-    const timer = setTimeout(() => setLoaded(true), 2500);
-    return () => clearTimeout(timer);
-  }, []);
+  const reveal = useCallback(() => setIntroPhase('arriving'), []);
+  const complete = useCallback(() => setIntroPhase('ready'), []);
 
   return (
     <>
       {/* ─────────────────────────────────────────────────────────────────
           PRELOADER — Renders first, locks scroll, unmounts on complete
           ───────────────────────────────────────────────────────────────── */}
-      <Preloader onComplete={() => setLoaded(true)} />
+      <Preloader onReveal={reveal} onComplete={complete} />
 
       {/* ─────────────────────────────────────────────────────────────────
-          MAIN APP — Only mounts after preloader finishes
+          MAIN APP — Warms the viewer behind the flight sequence
           ───────────────────────────────────────────────────────────────── */}
-      {loaded && (
-        <main>
+        <main inert={introPhase!=='ready'?true:undefined}>
           <header>
-            <a href="#top">PRANA</a>
-            <span>ENGINEERING INSPECTION / 01</span>
+            <a href="#top">PRĀŅA<span className="brand-system"> / SYSTEMS</span></a>
+            <span>HOMEOSTATIC FLIGHT SYSTEM / SIH26</span>
             <span className="nominal">SYSTEM STATUS / NOMINAL</span>
           </header>
 
           {/* Jaw-dropping drone scroll animation at the very top */}
-          <MasterDroneExploder />
+          <MasterDroneExploder introPhase={introPhase} />
 
-          <section className="hero" id="top">
+          <section className="hero" id="architecture">
             <div className="hero-grid" />
             <div className="hero-copy">
               <p>COMPLETE HARDWARE ARCHITECTURE</p>
@@ -65,7 +64,7 @@ function App() {
           ))}
 
           <section className="complete">
-            <p>20 / COMPLETE SYSTEM</p>
+            <p>{scenes.length} / COMPLETE SYSTEM</p>
             <h2>ONE SYSTEM.<br />MANY LAYERS<br />OF PROTECTION.</h2>
             <div>
               {['CONTROL', 'POWER', 'SENSORS', 'THERMAL', 'COMMUNICATION', 'PROTECTION', 'DATA'].map(item => (
@@ -74,9 +73,11 @@ function App() {
             </div>
           </section>
         </main>
-      )}
     </>
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+// Keep the root across Vite updates so design edits do not mount a second app.
+const appRoot = import.meta.hot?.data.root ?? createRoot(document.getElementById('root'));
+if (import.meta.hot) import.meta.hot.data.root = appRoot;
+appRoot.render(<App />);

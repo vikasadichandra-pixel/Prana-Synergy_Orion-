@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { layoutExplodedParts } from '../lib/explodedLayout';
+import React, { useState, useRef, useLayoutEffect, useCallback } from 'react';
 
 // Voltage Regulator physical discrete parts + Protection & ADC
-const REGULATOR_PARTS_CONFIG = [
+const REGULATOR_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'reg_heatsink',
     name: 'ANODIZED ALUMINIUM HEATSINK',
@@ -89,7 +90,7 @@ const REGULATOR_PARTS_CONFIG = [
     start: 0.28, end: 0.68, step: 7,
     line: { x1: 550, y1: 405, x2: 'left', y2: 405 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -108,7 +109,7 @@ export default function RegulatorExplodedView({ scrollProgress = 0, isSceneActiv
 
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
     lastProgressRef.current = progress;
     if (linesContainerRef.current) linesContainerRef.current.setAttribute('opacity', progress > 0.04 ? '1' : '0');
@@ -174,23 +175,23 @@ export default function RegulatorExplodedView({ scrollProgress = 0, isSceneActiv
           </defs>
 
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
-            {REGULATOR_PARTS_CONFIG.map((part) => {
+            {[...REGULATOR_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               const isSub = part.isSubComponent;
               const color = isSub ? '#ff8158' : (part.id === 'reg_heatsink' ? '#ff8158' : '#c9e87b');
               return (
-                <g key={`line-${part.id}`} ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0">
+                <g key={`line-${part.id}`} data-wire-id={part.id} ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0">
                   <line x1={part.assembled.x} y1={part.line.y1} x2={part.assembled.x} y2={part.line.y2} stroke={color} strokeWidth={isSub ? '1.5' : '2.5'} strokeDasharray={isSub ? '3 3' : '6 5'} strokeOpacity={0.75} markerStart={isSub ? 'url(#reg-marker-orange)' : `url(#reg-marker-${part.id === 'reg_heatsink' ? 'orange' : 'lime'})`} markerEnd={isSub ? 'url(#reg-marker-orange)' : `url(#reg-marker-${part.id === 'reg_heatsink' ? 'orange' : 'lime'})`} />
                 </g>
               );
             })}
           </g>
 
-          {REGULATOR_PARTS_CONFIG.map((part) => {
+          {[...REGULATOR_PARTS_CONFIG].reverse().map((part) => {
             const isHovered = hoveredPart === part.id;
             const isSub = part.isSubComponent;
             return (
-              <g key={part.id} onMouseEnter={() => handleMouseEnter(part.id)} onMouseLeave={handleMouseLeave}
+              <g key={part.id} data-part-id={part.id} onMouseEnter={() => handleMouseEnter(part.id)} onMouseLeave={handleMouseLeave}
                 style={{ cursor: 'pointer', willChange: 'transform', filter: isHovered ? 'drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15)' : 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))', transition: 'filter 0.15s ease-out' }}
                 ref={(el) => { partGroupRefs.current[part.id] = el; }} transform={`translate(${part.assembled.x}, ${part.assembled.y})`}>
                 {isHovered && <rect x={-6} y={-6} width={part.w + 12} height={part.h + 12} fill="none" stroke={isSub ? '#ff8158' : '#c9e87b'} strokeWidth={isSub ? '1.5' : '2.5'} strokeDasharray={isSub ? '3 3' : '5 5'} rx={isSub ? 2 : 6} />}

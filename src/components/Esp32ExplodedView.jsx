@@ -1,3 +1,4 @@
+import { layoutExplodedParts } from '../lib/explodedLayout';
 ﻿import React, { useState } from 'react';
 import { Layers, ChevronRight } from 'lucide-react';
 import HorizontalExplodedView from './HorizontalExplodedView';
@@ -9,7 +10,7 @@ import HorizontalExplodedView from './HorizontalExplodedView';
 // West / Left: RF Module, Left Header, Left Standoff, EN Button
 // Center: Main System PCB
 // East / Right: Boot Button, USB Bracket, Micro-USB Connector, Right Standoff, Right Header
-const HORIZONTAL_PARTS_CONFIG = [
+const HORIZONTAL_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'pcb',
     name: 'MAIN SYSTEM PCB',
@@ -169,7 +170,7 @@ const HORIZONTAL_PARTS_CONFIG = [
     step: 5,
     line: { x1: 750, y1: 1164, x2: 'left', y2: 1164 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -261,7 +262,7 @@ export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = 
 
           {/* Dynamic Horizontal Laser Projection Lines */}
           <g opacity={progress > 0.04 ? 1 : 0} style={{ transition: 'opacity 0.25s' }}>
-            {HORIZONTAL_PARTS_CONFIG.map((part) => {
+            {[...HORIZONTAL_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               const subP = smoothSubProgress(progress, part.start, part.end);
               if (subP <= 0.02) return null;
@@ -284,7 +285,7 @@ export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = 
               const marker = isOrange ? 'url(#esp32-marker-orange)' : 'url(#esp32-marker-lime)';
 
               return (
-                <g key={`line-${part.id}`}>
+                <g key={`line-${part.id}`} data-wire-id={part.id}>
                   <line
                     x1={x1}
                     y1={y1}
@@ -303,7 +304,7 @@ export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = 
           </g>
 
           {/* 10 Physical Parts moving horizontally */}
-          {HORIZONTAL_PARTS_CONFIG.map((part) => {
+          {[...HORIZONTAL_PARTS_CONFIG].reverse().map((part) => {
             const subP = smoothSubProgress(progress, part.start, part.end);
             const currentX = part.assembled.x + (part.exploded.x - part.assembled.x) * subP;
             const currentY = part.assembled.y + (part.exploded.y - part.assembled.y) * subP;
@@ -311,7 +312,8 @@ export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = 
 
             return (
               <g
-                key={part.id}
+                key={part.id} data-part-id={part.id}
+                transform={`translate(${currentX}, ${currentY})`}
                 onMouseEnter={() => setHoveredPart(part.id)}
                 onMouseLeave={() => setHoveredPart(null)}
                 style={{ cursor: 'pointer', willChange: 'transform' }}
@@ -319,8 +321,8 @@ export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = 
                 {/* Hover Outline */}
                 {isHovered && (
                   <rect
-                    x={currentX - 6}
-                    y={currentY - 6}
+                    x={-6}
+                    y={-6}
                     width={part.w + 12}
                     height={part.h + 12}
                     fill="none"
@@ -333,8 +335,8 @@ export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = 
                 {/* Authentic Part PNG */}
                 <image
                   href={part.file}
-                  x={currentX}
-                  y={currentY}
+                  x={0}
+                  y={0}
                   width={part.w}
                   height={part.h}
                   preserveAspectRatio="xMidYMid meet"
@@ -379,7 +381,7 @@ export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = 
             >
               {hoveredPart
                 ? HORIZONTAL_PARTS_CONFIG.find((p) => p.id === hoveredPart)?.name
-                : 'ESP32 HARDWARE DECOMPOSITION Â· 10 PHYSICAL PARTS'}
+                : 'ESP32 HARDWARE DECOMPOSITION · 10 PHYSICAL PARTS'}
             </div>
             <div
               style={{

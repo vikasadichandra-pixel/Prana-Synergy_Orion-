@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Zap, Radio, Thermometer, ShieldAlert, Cpu } from 'lucide-react';
 
 const COMPONENT_CUTOUT_MAP = {
@@ -398,7 +398,7 @@ export default function HorizontalExplodedView({ scene, scrollProgress = 0, isSc
               transform: `translateX(-${displacement}px)`,
               transition: 'transform 0.08s linear, filter 0.2s',
               cursor: 'pointer',
-              zIndex: hoveredSlice === 0 ? 10 : 5
+              zIndex: hoveredSlice === 0 ? 10 : 6
             }}
           >
             <img
@@ -458,7 +458,7 @@ export default function HorizontalExplodedView({ scene, scrollProgress = 0, isSc
                 }}
               >
                 <span>â—</span>
-                <span>01 Â· {layers[0]}</span>
+                <span>01 · {layers[0]}</span>
               </div>
               <div
                 style={{
@@ -484,7 +484,7 @@ export default function HorizontalExplodedView({ scene, scrollProgress = 0, isSc
               transform: `scale(${1 + 0.04 * easedP})`,
               transition: 'transform 0.08s linear, filter 0.2s',
               cursor: 'pointer',
-              zIndex: hoveredSlice === 1 ? 10 : 4
+              zIndex: hoveredSlice === 1 ? 10 : 5
             }}
           >
             <img
@@ -552,7 +552,7 @@ export default function HorizontalExplodedView({ scene, scrollProgress = 0, isSc
                 }}
               >
                 <span style={{ color: '#c9e87b' }}>â—</span>
-                <span>02 Â· {layers[1]} (CORE)</span>
+                <span>02 · {layers[1]} (CORE)</span>
               </div>
             </div>
           </div>
@@ -570,7 +570,7 @@ export default function HorizontalExplodedView({ scene, scrollProgress = 0, isSc
               transform: `translateX(${displacement}px)`,
               transition: 'transform 0.08s linear, filter 0.2s',
               cursor: 'pointer',
-              zIndex: hoveredSlice === 2 ? 10 : 5
+              zIndex: hoveredSlice === 2 ? 10 : 4
             }}
           >
             <img
@@ -630,7 +630,7 @@ export default function HorizontalExplodedView({ scene, scrollProgress = 0, isSc
                 }}
               >
                 <span>â—</span>
-                <span>03 Â· {layers[2]}</span>
+                <span>03 · {layers[2]}</span>
               </div>
               <div
                 style={{

@@ -1,0 +1,15 @@
+{
+  "base": "prana.glb",
+  "assemblies": [
+    "Chassis",
+    "Heatpipe",
+    "PCB",
+    "Battery",
+    "PhaseHeatpipes",
+    "AntiIcing"
+  ],
+  "addedParts": 116,
+  "addedTriangles": 40492,
+  "bytes": 9790088,
+  "baseGeometryPreserved": true
+}

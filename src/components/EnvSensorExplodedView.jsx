@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { layoutExplodedParts } from '../lib/explodedLayout';
+import React, { useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 
 // Environmental Sensor Array — SHT41 + BMP390 physical discrete parts
-const ENV_PARTS_CONFIG = [
+const ENV_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'env_grill',
     name: 'PTFE INTAKE GRILL',
@@ -76,7 +77,7 @@ const ENV_PARTS_CONFIG = [
     step: 5,
     line: { x1: 530, y1: 300, x2: 'left', y2: 300 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -192,7 +193,7 @@ export default function EnvSensorExplodedView({ scrollProgress = 0, isSceneActiv
   const lastProgressRef = useRef(-1);
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
     lastProgressRef.current = progress;
     if (linesContainerRef.current) linesContainerRef.current.setAttribute('opacity', progress > 0.04 ? '1' : '0');
@@ -254,20 +255,20 @@ export default function EnvSensorExplodedView({ scrollProgress = 0, isSceneActiv
         <svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
           {svgDefs}
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
-            {ENV_PARTS_CONFIG.map((part) => {
+            {[...ENV_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               return (
-                <g key={`line-${part.id}`} ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0">
+                <g key={`line-${part.id}`} data-wire-id={part.id} ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0">
                   <line x1={part.assembled.x} y1={part.line.y1} x2={part.assembled.x} y2={part.line.y2} stroke="#4dd0b5" strokeWidth="2.5" strokeDasharray="6 5" strokeOpacity={0.75} markerStart="url(#env-marker-teal)" markerEnd="url(#env-marker-teal)" />
                 </g>
               );
             })}
           </g>
-          {ENV_PARTS_CONFIG.map((part) => {
+          {[...ENV_PARTS_CONFIG].reverse().map((part) => {
             const isHovered = hoveredPart === part.id;
             const PartRenderer = PART_RENDERERS[part.id];
             return (
-              <g key={part.id} ref={(el) => { partGroupRefs.current[part.id] = el; }} transform={`translate(${part.assembled.x}, ${part.assembled.y})`} onMouseEnter={() => handleMouseEnter(part.id)} onMouseLeave={handleMouseLeave} style={{ cursor: 'pointer', willChange: 'transform', filter: isHovered ? 'drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15)' : 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))', transition: 'filter 0.15s ease-out' }}>
+              <g key={part.id} data-part-id={part.id} ref={(el) => { partGroupRefs.current[part.id] = el; }} transform={`translate(${part.assembled.x}, ${part.assembled.y})`} onMouseEnter={() => handleMouseEnter(part.id)} onMouseLeave={handleMouseLeave} style={{ cursor: 'pointer', willChange: 'transform', filter: isHovered ? 'drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15)' : 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))', transition: 'filter 0.15s ease-out' }}>
                 {isHovered && <rect x={-6} y={-6} width={part.w + 12} height={part.h + 12} fill="none" stroke="#4dd0b5" strokeWidth="2.5" strokeDasharray="5 5" rx="6" />}
                 {PartRenderer && <PartRenderer w={part.w} h={part.h} />}
               </g>

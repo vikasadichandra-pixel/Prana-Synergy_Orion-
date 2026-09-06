@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { layoutExplodedParts } from '../lib/explodedLayout';
+import React, { useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 
 // Energy Harvesting Module — TEG + LTC3108
-const ENERGY_PARTS_CONFIG = [
+const ENERGY_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'eh_hotpad',
     name: 'HOT-SIDE THERMAL PAD',
@@ -76,7 +77,7 @@ const ENERGY_PARTS_CONFIG = [
     step: 5,
     line: { x1: 520, y1: 300, x2: 'left', y2: 300 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -187,7 +188,7 @@ export default function EnergyHarvestingExplodedView({ scrollProgress = 0, isSce
   const lastProgressRef = useRef(-1);
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
     lastProgressRef.current = progress;
     if (linesContainerRef.current) linesContainerRef.current.setAttribute('opacity', progress > 0.04 ? '1' : '0');
@@ -257,20 +258,20 @@ export default function EnergyHarvestingExplodedView({ scrollProgress = 0, isSce
         <svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
           {svgDefs}
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
-            {ENERGY_PARTS_CONFIG.map((part) => {
+            {[...ENERGY_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               return (
-                <g key={`line-${part.id}`} ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0">
+                <g key={`line-${part.id}`} data-wire-id={part.id} ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0">
                   <line x1={part.assembled.x} y1={part.line.y1} x2={part.assembled.x} y2={part.line.y2} stroke="#ff8c5a" strokeWidth="2.5" strokeDasharray="6 5" strokeOpacity={0.75} markerStart="url(#eh-marker-orange)" markerEnd="url(#eh-marker-orange)" />
                 </g>
               );
             })}
           </g>
-          {ENERGY_PARTS_CONFIG.map((part) => {
+          {[...ENERGY_PARTS_CONFIG].reverse().map((part) => {
             const isHovered = hoveredPart === part.id;
             const PartRenderer = PART_RENDERERS[part.id];
             return (
-              <g key={part.id} ref={(el) => { partGroupRefs.current[part.id] = el; }} transform={`translate(${part.assembled.x}, ${part.assembled.y})`} onMouseEnter={() => handleMouseEnter(part.id)} onMouseLeave={handleMouseLeave} style={{ cursor: 'pointer', willChange: 'transform', filter: isHovered ? 'drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15)' : 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))', transition: 'filter 0.15s ease-out' }}>
+              <g key={part.id} data-part-id={part.id} ref={(el) => { partGroupRefs.current[part.id] = el; }} transform={`translate(${part.assembled.x}, ${part.assembled.y})`} onMouseEnter={() => handleMouseEnter(part.id)} onMouseLeave={handleMouseLeave} style={{ cursor: 'pointer', willChange: 'transform', filter: isHovered ? 'drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15)' : 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))', transition: 'filter 0.15s ease-out' }}>
                 {isHovered && <rect x={-6} y={-6} width={part.w + 12} height={part.h + 12} fill="none" stroke="#ff8c5a" strokeWidth="2.5" strokeDasharray="5 5" rx="6" />}
                 {PartRenderer && <PartRenderer w={part.w} h={part.h} />}
               </g>

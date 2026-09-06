@@ -1,13 +1,14 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { layoutExplodedParts } from '../lib/explodedLayout';
+﻿import React, { useState, useRef, useLayoutEffect, useCallback } from 'react';
 
 // Thermistor physical discrete parts
 // Coordinates in 1200 x 600 artboard
-const THERMISTOR_PARTS_CONFIG = [
+const THERMISTOR_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'thm_glass',
     name: 'GLASS ENCAPSULATION BEAD',
     code: 'NTC-GLASS-BEAD-10K',
-    spec: 'Hermetically sealed glass envelope for high-temperature stability up to 300Â°C',
+    spec: 'Hermetically sealed glass envelope for high-temperature stability up to 300°C',
     role: 'ENVIRONMENTAL & THERMAL SEAL',
     w: 60,
     h: 100,
@@ -22,7 +23,7 @@ const THERMISTOR_PARTS_CONFIG = [
     id: 'thm_core',
     name: 'NTC CERAMIC SEMICONDUCTOR DIE',
     code: 'NTC-DIE-10K-3950',
-    spec: 'Negative Temperature Coefficient (NTC) metal-oxide ceramic sensing element, 10kÎ© @ 25Â°C, B-value 3950K',
+    spec: 'Negative Temperature Coefficient (NTC) metal-oxide ceramic sensing element, 10kΩ @ 25°C, B-value 3950K',
     role: 'THERMAL MEASUREMENT SENSOR',
     w: 40,
     h: 60,
@@ -47,7 +48,7 @@ const THERMISTOR_PARTS_CONFIG = [
     step: 3,
     line: { x1: 600, y1: 200, x2: 'left', y2: 200 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -69,7 +70,7 @@ export default function ThermistorExplodedView({ scrollProgress = 0, isSceneActi
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
   // Direct DOM mutation for transforms (bypass React render cycle)
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
     lastProgressRef.current = progress;
 
@@ -208,7 +209,7 @@ export default function ThermistorExplodedView({ scrollProgress = 0, isSceneActi
 
           {/* Dynamic Laser Projection Lines */}
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
-            {THERMISTOR_PARTS_CONFIG.map((part) => {
+            {[...THERMISTOR_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               const subP = smoothSubProgress(progress, part.start, part.end);
               if (subP <= 0.02) return null;
@@ -231,7 +232,7 @@ export default function ThermistorExplodedView({ scrollProgress = 0, isSceneActi
               const marker = isOrange ? 'url(#thm-marker-orange)' : 'url(#thm-marker-lime)';
 
               return (
-                <g ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0" key={`line-${part.id}`}>
+                <g ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0" key={`line-${part.id}`} data-wire-id={part.id}>
                   <line
                     x1={x1}
                     y1={y1}
@@ -250,7 +251,7 @@ export default function ThermistorExplodedView({ scrollProgress = 0, isSceneActi
           </g>
 
           {/* Physical Discrete Parts */}
-          {THERMISTOR_PARTS_CONFIG.map((part) => {
+          {[...THERMISTOR_PARTS_CONFIG].reverse().map((part) => {
             const subP = smoothSubProgress(progress, part.start, part.end);
             const currentX = part.assembled.x + (part.exploded.x - part.assembled.x) * subP;
             const currentY = part.assembled.y + (part.exploded.y - part.assembled.y) * subP;
@@ -258,7 +259,7 @@ export default function ThermistorExplodedView({ scrollProgress = 0, isSceneActi
 
             return (
               <g
-                key={part.id}
+                key={part.id} data-part-id={part.id}
                 onMouseEnter={() => setHoveredPart(part.id)}
                 onMouseLeave={() => setHoveredPart(null)}
                 style={{ cursor: 'pointer', willChange: 'transform', filter: isHovered ? 'drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15)' : 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))', transition: 'filter 0.15s ease-out' }}
@@ -349,7 +350,7 @@ export default function ThermistorExplodedView({ scrollProgress = 0, isSceneActi
             >
               {hoveredPart
                 ? THERMISTOR_PARTS_CONFIG.find((p) => p.id === hoveredPart)?.name
-                : 'THERMISTOR SYSTEM Â· 3 DISCRETE PHYSICAL LAYERS'}
+                : 'THERMISTOR SYSTEM · 3 DISCRETE PHYSICAL LAYERS'}
             </div>
             <div
               style={{

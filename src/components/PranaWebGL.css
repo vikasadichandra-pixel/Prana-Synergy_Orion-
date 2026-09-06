@@ -1,0 +1,44 @@
+.prana-webgl { height:620vh; position:relative; background:#030705; }
+.prana-sticky { position:sticky; top:0; height:100vh; overflow:clip; isolation:isolate; background:radial-gradient(ellipse at 50% 54%,#10231b 0%,#060d09 44%,#030705 77%); }
+.prana-ambient { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0; mask-image:linear-gradient(transparent 5%,black 27%,black 78%,transparent); }
+.prana-aurora { position:absolute; width:75%; height:75%; border-radius:50%; filter:blur(55px); will-change:transform; }
+.prana-aurora-lime { left:5%; top:18%; background:radial-gradient(ellipse,#91ce4121,transparent 65%); animation:prana-aurora-drift 19s ease-in-out infinite alternate; }
+.prana-aurora-cyan { right:-12%; top:3%; background:radial-gradient(ellipse,#32cce52b,transparent 67%); animation:prana-aurora-drift 25s ease-in-out -12s infinite alternate-reverse; }
+.prana-sweep { position:absolute; width:100%; aspect-ratio:1; left:2%; top:5%; opacity:.15; border-radius:50%; background:conic-gradient(from 20deg,transparent 0deg 280deg,#76edbf22 320deg,transparent 350deg); animation:prana-atmosphere-sweep 38s linear infinite; filter:blur(20px); }
+.prana-wind { position:absolute; inset:0; width:100%; height:100%; }
+@keyframes prana-aurora-drift { from { transform:translate3d(-9%,5%,0) scale(.85) rotate(-15deg); } to { transform:translate3d(12%,-8%,0) scale(1.15) rotate(15deg); } }
+@keyframes prana-atmosphere-sweep { to { transform:rotate(360deg); } }
+.prana-ambient.is-paused * { animation-play-state:paused; }
+.prana-ambient.is-reduced * { animation:none; }
+/* Continuous atmosphere is an explicit part of this flight presentation. */
+.prana-ambient:not(.is-reduced) .prana-aurora-lime { animation-duration:19s !important; }
+.prana-ambient:not(.is-reduced) .prana-aurora-cyan { animation-duration:25s !important; }
+.prana-ambient:not(.is-reduced) .prana-sweep { animation-duration:38s !important; }
+@media(max-width:600px) { .prana-aurora { width:130%; filter:blur(35px); }.prana-aurora-lime { left:-35%; }.prana-aurora-cyan { right:-60%; }.prana-sweep { width:170%; left:-30%; top:30%; } }
+.prana-sticky:after { content:''; position:absolute; inset:0; z-index:-1; background-image:linear-gradient(#91c7a504 1px,transparent 1px),linear-gradient(90deg,#91c7a504 1px,transparent 1px); background-size:70px 70px; pointer-events:none; }
+.prana-heading { position:absolute; top:105px; left:4.4vw; right:4.4vw; z-index:3; pointer-events:none; font-family:'DM Mono',monospace; }
+.prana-eyebrow { margin:0 0 15px; font-size:9px; letter-spacing:2px; color:#8aab9c; }.prana-eyebrow i { color:#58d3ff; padding:0 10px; font-style:normal; }
+.prana-heading h1 { margin:0; font-size:clamp(22px,2.7vw,47px); line-height:1.1; font-weight:600; letter-spacing:-1.4px; color:#ecf0ea; text-shadow:0 0 25px #c9e87b16; }
+.prana-subtitle { font-size:clamp(9px,.93vw,14px); color:#c9e87b; margin:12px 0 0; letter-spacing:2px; text-shadow:0 0 20px #c9e87b33; }.prana-description { font-size:10px; color:#80968b; max-width:570px; line-height:1.7; margin-top:14px; }
+.prana-render { position:absolute; inset:205px 4% 92px; z-index:1; cursor:grab; touch-action:pan-y; }
+.prana-render:active { cursor:grabbing; }
+/* Native vertical swipes scroll the inspection; horizontal swipes rotate it. */
+.prana-render div,.prana-render canvas { touch-action:pan-y !important; }
+.prana-render:focus-visible { outline:1px solid #58d3ff55; outline-offset:-8px; }
+.prana-environment { position:absolute; bottom:60px; left:4.4vw; z-index:2; display:flex; align-items:center; gap:16px; font:10px 'DM Mono',monospace; letter-spacing:1px; color:#809d8c; pointer-events:none; }
+.prana-environment>span:first-child { color:#c9e87b; }
+.prana-environment b { color:#dbe8d8; font-weight:400; border-inline:1px solid #8baa7738; padding-inline:16px; }
+.prana-materials { position:absolute; left:4.4vw; bottom:167px; z-index:2; font:8px 'DM Mono',monospace; color:#7d9489; }.prana-materials>span { color:#4c6c5d; font-size:7px; letter-spacing:2px; display:block; margin-bottom:20px; }.prana-materials div { display:flex; align-items:center; gap:10px; margin-top:13px; }.prana-materials b { color:#537263; font-size:8px; font-weight:400; }.prana-materials i { width:12px; height:2px; }.prana-materials div.active { color:#def5d3; }
+.prana-gesture-hint { position:absolute; bottom:60px; right:4.4vw; z-index:3; display:flex; gap:26px; align-items:center; font:9px 'DM Mono',monospace; letter-spacing:1.2px; color:#6f937d; }
+.prana-gesture-hint a { color:#94b19f; font-size:8px; text-decoration:none; letter-spacing:0; }
+.prana-view-note { position:absolute; bottom:17px; left:4.4vw; right:4.4vw; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #a5d3b31a; padding-top:13px; font:7px 'DM Mono',monospace; letter-spacing:1.5px; color:#587b68; }.prana-view-note a { color:#749785; text-decoration:none; }.prana-view-note i { display:inline-block; width:4px; height:4px; background:#c9e87b; box-shadow:0 0 10px #c9e87b; margin-right:8px; border-radius:50%; }
+.prana-loading,.prana-failure { font:10px 'DM Mono',monospace; color:#c9e87b; }.prana-failure { padding:30%; line-height:1.8; }.prana-failure a { color:inherit; }
+@media(min-width:1600px) { .prana-render { top:225px; }.prana-heading { top:112px; }.prana-description { font-size:12px; }.prana-materials { font-size:9px; }.prana-environment { font-size:10px; }.prana-gesture-hint { font-size:8px; } }
+@media(max-width:1000px) { .prana-materials { font-size:7px; opacity:.7; }.prana-gesture-hint { gap:18px; font-size:6px; }.prana-environment { gap:10px; font-size:7px; }.prana-environment b { padding-inline:10px; } }
+@media(max-width:600px) { .prana-webgl { height:520vh; }.prana-heading { top:94px; left:6vw; right:6vw; }.prana-eyebrow { font-size:7px; letter-spacing:1px; }.prana-heading h1 { font-size:25px; letter-spacing:-1px; max-width:330px; }.prana-description { font-size:8px; max-width:300px; }.prana-subtitle { font-size:8px; line-height:1.6; letter-spacing:1px; }.prana-materials { display:none; }.prana-render { inset:220px 0 126px; }.prana-environment { left:6vw; bottom:92px; font-size:7px; gap:12px; }.prana-gesture-hint { left:6vw; right:6vw; bottom:60px; justify-content:space-between; gap:8px; font-size:5px; letter-spacing:.7px; }.prana-gesture-hint a { font-size:7px; }.prana-view-note>span:nth-child(2) { display:none; }.prana-view-note { font-size:6px; } }
+@media(max-height:650px) and (min-width:601px) { .prana-heading { top:88px; }.prana-description { display:none; }.prana-render { top:155px; bottom:90px; }.prana-materials { display:none; } }
+
+/* Give every layer a close-up and hold the final overview before releasing. */
+.prana-webgl { height:1180vh; }
+.prana-render { top:var(--drone-stage-top,245px); }
+@media(max-width:600px) { .prana-webgl { height:1100vh; } }

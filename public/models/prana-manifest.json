@@ -1,0 +1,50 @@
+{
+  "assemblies": [
+    "Chassis",
+    "Heatpipe",
+    "PCB",
+    "Battery"
+  ],
+  "rotors": [
+    {
+      "name": "Rotor_1",
+      "translation": [
+        -1.85,
+        0.85,
+        -1.85
+      ],
+      "spinDirection": 1
+    },
+    {
+      "name": "Rotor_2",
+      "translation": [
+        -1.85,
+        0.85,
+        1.85
+      ],
+      "spinDirection": -1
+    },
+    {
+      "name": "Rotor_3",
+      "translation": [
+        1.85,
+        0.85,
+        -1.85
+      ],
+      "spinDirection": -1
+    },
+    {
+      "name": "Rotor_4",
+      "translation": [
+        1.85,
+        0.85,
+        1.85
+      ],
+      "spinDirection": 1
+    }
+  ],
+  "parts": 936,
+  "triangles": 290386,
+  "drawCalls": 30,
+  "bytes": 8593888
+}

@@ -84,17 +84,18 @@ const ParticleFieldBackground = ({ scrollRef }) => {
         // "Prana" (Life Force) Heartbeat Pulse
         // A smooth breathing sine wave (lub-dub)
         const t = state.clock.elapsedTime;
-        const breath = Math.sin(t * 2.0); // Breathes 2 radians per sec
+        const breath = Math.sin(t * 6.0); // Increased rate for clear visibility
         
         // Channel heartbeat into slight expansion and opacity pulsing
-        ref.current.scale.setScalar(1 + breath * 0.04);
-        ref.current.material.opacity = 0.35 + (breath * 0.15); 
+        ref.current.scale.setScalar(1 + breath * 0.06); // Increased magnitude
+        ref.current.material.opacity = 0.4 + (breath * 0.2); 
 
         // Tie Z position and additional rotation to scroll progress!
         if (scrollRef && scrollRef.current) {
             const p = scrollRef.current.current;
             // Particles rush forward dynamically as the user scrolls
-            ref.current.position.z = p * 15;
+            // Reduced max z from 15 to 8 so particles remain visible behind the drone
+            ref.current.position.z = p * 8;
             // Subtle tilt based on scroll
             ref.current.rotation.z = p * 0.2;
         }
@@ -284,12 +285,12 @@ export default function MasterDroneExploder() {
 
   // ── HUD COPY (unchanged) ───────────────────────────────────────────
   const HUD_TEXT = [
-    { title: 'PRĀŅA HOMEOSTATIC DRONE', detail: 'SCROLL TO BEGIN DEEP INSPECTION', sub: 'Fully Assembled · 34 Components' },
-    { title: 'PHASE I · MACRO DISAGGREGATION', detail: '4 PRIMARY LAYERS SEPARATING', sub: 'Crown · Heatpipe · Core · Power Vault' },
-    { title: 'FOCUS: RADIATIVE CROWN', detail: 'AEROSPACE GRADE PROTECTION', sub: 'Camera Zoom Engaged' },
-    { title: 'FOCUS: THERMAL HEATPIPE', detail: 'PASSIVE COOLING SYSTEM', sub: 'Heat Dissipation Layer' },
-    { title: 'FOCUS: LOGIC CORE', detail: 'V4.1 COMPUTE ENGINE', sub: 'Sensors & Processing Unlocked' },
-    { title: 'FOCUS: POWER VAULT', detail: 'HIGH DENSITY ENERGY STORAGE', sub: 'Solid State Battery Cell' },
+    { title: 'PRĀŅA HOMEOSTATIC DRONE', detail: 'SCROLL TO BEGIN DEEP INSPECTION', sub: 'Fully Assembled · 34 Components', count: '34' },
+    { title: 'PHASE I · MACRO DISAGGREGATION', detail: '4 PRIMARY LAYERS SEPARATING', sub: 'Crown · Heatpipe · Core · Power Vault', count: '4' },
+    { title: 'FOCUS: RADIATIVE CROWN', detail: 'AEROSPACE GRADE PROTECTION', sub: 'Camera Zoom Engaged', count: '1' },
+    { title: 'FOCUS: THERMAL HEATPIPE', detail: 'PASSIVE COOLING SYSTEM', sub: 'Heat Dissipation Layer', count: '1' },
+    { title: 'FOCUS: LOGIC CORE', detail: 'V4.1 COMPUTE ENGINE', sub: 'Sensors & Processing Unlocked', count: '1' },
+    { title: 'FOCUS: POWER VAULT', detail: 'HIGH DENSITY ENERGY STORAGE', sub: 'Solid State Battery Cell', count: '1' },
   ];
   const hud = HUD_TEXT[phase];
 
@@ -327,7 +328,7 @@ export default function MasterDroneExploder() {
         {/* COMPONENT COUNT PANEL */}
         <div className="drone-count-panel">
           <div style={{ fontSize: '9px', color: '#c9e87b', fontWeight: 700, letterSpacing: '2px' }}>COMPONENT COUNT</div>
-          <div style={{ fontSize: '28px', color: '#fff', fontWeight: 700, marginTop: '4px' }}>34</div>
+          <div style={{ fontSize: '28px', color: '#fff', fontWeight: 700, marginTop: '4px' }}>{hud.count}</div>
         </div>
 
         {/* === THE SVG CORE LAYOUT === */}

@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { layoutExplodedParts } from '../lib/explodedLayout';
+import React, { useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 
 // MB-102 Breadboard / Custom Prototype PCB — physical discrete parts
-const PROTO_PARTS_CONFIG = [
+const PROTO_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'proto_rails',
     name: 'POWER DISTRIBUTION RAILS',
@@ -61,7 +62,7 @@ const PROTO_PARTS_CONFIG = [
     step: 4,
     line: { x1: 500, y1: 300, x2: 'left', y2: 300 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -175,7 +176,7 @@ export default function PrototypeBoardExplodedView({ scrollProgress = 0, isScene
   const lastProgressRef = useRef(-1);
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
     lastProgressRef.current = progress;
     if (linesContainerRef.current) linesContainerRef.current.setAttribute('opacity', progress > 0.04 ? '1' : '0');
@@ -232,20 +233,20 @@ export default function PrototypeBoardExplodedView({ scrollProgress = 0, isScene
         <svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
           {svgDefs}
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
-            {PROTO_PARTS_CONFIG.map((part) => {
+            {[...PROTO_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               return (
-                <g key={`line-${part.id}`} ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0">
+                <g key={`line-${part.id}`} data-wire-id={part.id} ref={(el) => { lineGroupRefs.current[part.id] = el; }} opacity="0">
                   <line x1={part.assembled.x} y1={part.line.y1} x2={part.assembled.x} y2={part.line.y2} stroke="#f0c242" strokeWidth="2.5" strokeDasharray="6 5" strokeOpacity={0.75} markerStart="url(#proto-marker-yellow)" markerEnd="url(#proto-marker-yellow)" />
                 </g>
               );
             })}
           </g>
-          {PROTO_PARTS_CONFIG.map((part) => {
+          {[...PROTO_PARTS_CONFIG].reverse().map((part) => {
             const isHovered = hoveredPart === part.id;
             const PartRenderer = PART_RENDERERS[part.id];
             return (
-              <g key={part.id} ref={(el) => { partGroupRefs.current[part.id] = el; }} transform={`translate(${part.assembled.x}, ${part.assembled.y})`} onMouseEnter={() => handleMouseEnter(part.id)} onMouseLeave={handleMouseLeave} style={{ cursor: 'pointer', willChange: 'transform', filter: isHovered ? 'drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15)' : 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))', transition: 'filter 0.15s ease-out' }}>
+              <g key={part.id} data-part-id={part.id} ref={(el) => { partGroupRefs.current[part.id] = el; }} transform={`translate(${part.assembled.x}, ${part.assembled.y})`} onMouseEnter={() => handleMouseEnter(part.id)} onMouseLeave={handleMouseLeave} style={{ cursor: 'pointer', willChange: 'transform', filter: isHovered ? 'drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15)' : 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))', transition: 'filter 0.15s ease-out' }}>
                 {isHovered && <rect x={-6} y={-6} width={part.w + 12} height={part.h + 12} fill="none" stroke="#f0c242" strokeWidth="2.5" strokeDasharray="5 5" rx="6" />}
                 {PartRenderer && <PartRenderer w={part.w} h={part.h} />}
               </g>

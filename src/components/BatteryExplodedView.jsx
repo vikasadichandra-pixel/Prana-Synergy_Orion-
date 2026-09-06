@@ -1,8 +1,9 @@
-﻿import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { layoutExplodedParts } from '../lib/explodedLayout';
+﻿import React, { useState, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
 
 // 11.1V 3000mAh 18650 3S1P Li-ion Battery Pack physical discrete parts
 // Coordinates in 1200 x 600 artboard
-const BATTERY_PARTS_CONFIG = [
+const BATTERY_PARTS_CONFIG = layoutExplodedParts([
   {
     id: 'bat_pvc',
     name: 'BLUE PVC HEAT-SHRINK SLEEVE WITH SPEC LABEL',
@@ -66,7 +67,7 @@ const BATTERY_PARTS_CONFIG = [
     id: 'bat_kapton',
     name: 'HIGH-TEMP KAPTON POLYIMIDE TAPE',
     code: 'TAPE-KAPTON-POLY-15MM',
-    spec: '260Â°C rated amber polyimide adhesive film for terminal dielectric isolation and busbar retention',
+    spec: '260°C rated amber polyimide adhesive film for terminal dielectric isolation and busbar retention',
     role: 'ELECTRICAL ARC & SHORT ISOLATION',
     w: 95,
     h: 180,
@@ -107,7 +108,7 @@ const BATTERY_PARTS_CONFIG = [
     step: 7,
     line: { x1: 522, y1: 280, x2: 'left', y2: 280 }
   }
-];
+]);
 
 function smoothSubProgress(overallProgress, start, end) {
   if (start === end) return overallProgress >= start ? 1 : 0;
@@ -137,7 +138,7 @@ const PvcSleeve = React.memo(({ w, h }) => (
     <text x="20" y="132" fill="#333" fontFamily="'DM Mono', monospace" fontSize="8.5">CUT-OFF: 9.0V</text>
     <text x="20" y="147" fill="#333" fontFamily="'DM Mono', monospace" fontSize="8.5">BMS INTEGRATED</text>
     <line x1="20" y1="156" x2={w - 20} y2="156" stroke="#e0e0e0" strokeWidth="1" />
-    <text x={w / 2} y="168" fill="#666" fontFamily="'DM Sans', sans-serif" fontSize="8" textAnchor="middle">MADE IN INDIA Â· RoHS</text>
+    <text x={w / 2} y="168" fill="#666" fontFamily="'DM Sans', sans-serif" fontSize="8" textAnchor="middle">MADE IN INDIA · RoHS</text>
   </g>
 ));
 
@@ -203,7 +204,7 @@ const KaptonTape = React.memo(({ w, h }) => (
     <rect x="0" y="0" width={w} height={h} rx="3" fill="url(#kapton-gradient)" stroke="#d99918" strokeWidth="1.2" />
     <line x1="8" y1="4" x2="8" y2={h - 4} stroke="#ffea94" strokeWidth="1.5" opacity="0.75" />
     <line x1="4" y1={h / 2} x2={w - 4} y2={h / 2} stroke="#ffea94" strokeWidth="1" opacity="0.4" />
-    <text x={w / 2} y={h / 2 + 3} fill="#573703" fontFamily="'DM Mono', monospace" fontWeight="800" fontSize="9" textAnchor="middle" letterSpacing="0.8">KAPTON 260Â°C</text>
+    <text x={w / 2} y={h / 2 + 3} fill="#573703" fontFamily="'DM Mono', monospace" fontWeight="800" fontSize="9" textAnchor="middle" letterSpacing="0.8">KAPTON 260°C</text>
   </g>
 ));
 
@@ -258,7 +259,7 @@ export default function BatteryExplodedView({ scrollProgress = 0, isSceneActive 
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
   // â”€â”€ DIRECT DOM ANIMATION (runs outside React render) â”€â”€
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Skip if progress hasn't meaningfully changed
     if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
     lastProgressRef.current = progress;
@@ -421,7 +422,7 @@ export default function BatteryExplodedView({ scrollProgress = 0, isSceneActive 
 
           {/* Dynamic Laser Projection Lines â€” DOM-mutated, not React-rendered */}
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
-            {BATTERY_PARTS_CONFIG.map((part) => {
+            {[...BATTERY_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
               const isOrange = part.id.includes('cells') || part.id.includes('wire');
               const color = isOrange ? '#ff8158' : '#c9e87b';
@@ -429,7 +430,7 @@ export default function BatteryExplodedView({ scrollProgress = 0, isSceneActive 
 
               return (
                 <g
-                  key={`line-${part.id}`}
+                  key={`line-${part.id}`} data-wire-id={part.id}
                   ref={(el) => { lineGroupRefs.current[part.id] = el; }}
                   opacity="0"
                 >
@@ -451,13 +452,13 @@ export default function BatteryExplodedView({ scrollProgress = 0, isSceneActive 
           </g>
 
           {/* 7 Physical Discrete Battery Parts â€” transforms mutated via ref, not state */}
-          {BATTERY_PARTS_CONFIG.map((part) => {
+          {[...BATTERY_PARTS_CONFIG].reverse().map((part) => {
             const isHovered = hoveredPart === part.id;
             const PartRenderer = PART_RENDERERS[part.id];
 
             return (
               <g
-                key={part.id}
+                key={part.id} data-part-id={part.id}
                 ref={(el) => { partGroupRefs.current[part.id] = el; }}
                 transform={`translate(${part.assembled.x}, ${part.assembled.y})`}
                 onMouseEnter={() => handleMouseEnter(part.id)}
@@ -524,7 +525,7 @@ export default function BatteryExplodedView({ scrollProgress = 0, isSceneActive 
             >
               {hoveredPart
                 ? BATTERY_PARTS_CONFIG.find((p) => p.id === hoveredPart)?.name
-                : 'BATTERY PACK ARCHITECTURE Â· 7 DISCRETE PHYSICAL SUB-ASSEMBLIES'}
+                : 'BATTERY PACK ARCHITECTURE · 7 DISCRETE PHYSICAL SUB-ASSEMBLIES'}
             </div>
             <div
               style={{

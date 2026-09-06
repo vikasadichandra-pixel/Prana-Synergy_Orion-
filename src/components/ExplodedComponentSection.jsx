@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ArrowDown, ShieldCheck } from 'lucide-react';
+import React, { memo, useRef } from 'react';
+import { ArrowDown } from 'lucide-react';
 import Esp32ExplodedView from './Esp32ExplodedView';
 import MicroSdExplodedView from './MicroSdExplodedView';
 import DisplayExplodedView from './DisplayExplodedView';
@@ -24,284 +24,53 @@ import LoraExplodedView from './LoraExplodedView';
 import InsulationExplodedView from './InsulationExplodedView';
 import SolderProtectionExplodedView from './SolderProtectionExplodedView';
 import RadiationShieldExplodedView from './RadiationShieldExplodedView';
+import useComponentStory from '../hooks/useComponentStory';
+import useHardwareFraming from '../hooks/useHardwareFraming';
+import { componentStoryPose, chapterLines } from '../lib/componentStory';
+import './ComponentStory.css';
 
-function Placeholder({ scene }) {
-  const resilience = scene.kind === 'resilience';
-  return (
-    <div className={`concept-layer ${resilience ? 'resilience' : ''}`}>
-      {resilience ? (
-        <>
-          <div className="shield">
-            <ShieldCheck size={46} />
-            <span>PHYSICAL PROTECTION</span>
-          </div>
-          <div className="integrity">
-            <b>SYSTEM RESILIENCE</b>
-            <span>WATCHDOG</span>
-            <span>ERROR CHECKING</span>
-            <span>CHECKSUM</span>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="tbd-line">
-            <i />
-            <b />
-            <i />
-          </div>
-          <div className="tbd-core">TBD</div>
-          <p>
-            PROTECTION LAYER
-            <br />
-            COMPONENTS TO BE DEFINED
-          </p>
-        </>
-      )}
-    </div>
-  );
-}
+const VIEWERS = Object.fromEntries(Object.entries({
+  esp32:Esp32ExplodedView, microsd:MicroSdExplodedView, display:DisplayExplodedView,
+  regulator:RegulatorExplodedView, thermistor:ThermistorExplodedView, 'battery-sensor':BatterySensorExplodedView,
+  'rf-sensor':RfSensorExplodedView, 'vibration-sensor':VibrationSensorExplodedView, 'env-sensor':EnvSensorExplodedView,
+  battery:BatteryExplodedView, mosfet:MosfetExplodedView, 'temp-sensor':TempSensorExplodedView,
+  converter:ConverterExplodedView, 'energy-harvesting':EnergyHarvestingExplodedView,
+  'heat-pipe':HeatPipeExplodedView, radiator:RadiatorExplodedView, structure:StructureExplodedView,
+  'prototype-board':PrototypeBoardExplodedView, insulation:InsulationExplodedView,
+  'solder-protection':SolderProtectionExplodedView, 'radiation-shield':RadiationShieldExplodedView,
+  lora:LoraExplodedView, antenna:AntennaExplodedView,
+}).map(([id, Viewer]) => [id, memo(Viewer)]));
 
 export default function ExplodedComponentSection({ scene }) {
-  const ref = useRef(null);
-  const [active, setActive] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
-
-  const isEsp32 = scene.index === '01' || scene.id === 'esp32';
-  const isMicroSd = scene.index === '02' || scene.id === 'microsd';
-  const isDisplay = scene.index === '03' || scene.id === 'display';
-  const isRegulator = scene.index === '04' || scene.id === 'regulator';
-  const isThermistor = scene.index === '05' || scene.id === 'thermistor';
-  const isBatterySensor = scene.index === '06' || scene.id === 'battery-sensor';
-  const isRfSensor = scene.index === '07' || scene.id === 'rf-sensor';
-  const isVibrationSensor = scene.index === '08' || scene.id === 'vibration-sensor';
-  const isEnvSensor = scene.index === '09' || scene.id === 'env-sensor';
-  const isBattery = scene.index === '10' || scene.id === 'battery';
-  const isMosfet = scene.index === '11' || scene.id === 'mosfet';
-  const isTempSensor = scene.index === '12' || scene.id === 'temp-sensor';
-  const isConverter = scene.index === '13' || scene.id === 'converter';
-  const isEnergyHarvesting = scene.index === '14' || scene.id === 'energy-harvesting';
-  const isHeatPipe = scene.index === '15' || scene.id === 'heat-pipe';
-  const isRadiator = scene.index === '16' || scene.id === 'radiator';
-  const isStructure = scene.index === '17' || scene.id === 'structure';
-  const isPrototypeBoard = scene.index === '18' || scene.id === 'prototype-board';
-  const isInsulation = scene.index === '19' || scene.id === 'insulation';
-  const isSolderProtection = scene.index === '20' || scene.id === 'solder-protection';
-  const isRadiationShield = scene.index === '21' || scene.id === 'radiation-shield';
-  const isLora = scene.index === '22' || scene.id === 'lora';
-  const isAntenna = scene.index === '23' || scene.id === 'antenna';
-  const isHardware = scene.kind === 'component';
-
-  // Intersection observer to activate scene styling
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setActive(entry.isIntersecting),
-      { threshold: 0.15 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  // Track global scroll progress over this section natively
-  const [internalScroll, setInternalScroll] = useState(0);
-  const targetScrollRef = useRef(0);
-  const currentScrollRef = useRef(0);
-  const visualStageRef = useRef(null);
-  const rafRef = useRef(null);
-
-  useEffect(() => {
-    if (!isHardware) return;
-    
-    const container = ref.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const rect = container.getBoundingClientRect();
-      const scrollable = container.scrollHeight - window.innerHeight;
-      if (scrollable <= 0) return;
-      const scrolled = -rect.top;
-      targetScrollRef.current = Math.max(0, Math.min(1, scrolled / scrollable));
-    };
-
-    const loop = () => {
-      currentScrollRef.current += (targetScrollRef.current - currentScrollRef.current) * 0.08;
-      setInternalScroll(currentScrollRef.current);
-      rafRef.current = requestAnimationFrame(loop);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    rafRef.current = requestAnimationFrame(loop);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, [isHardware]);
-
-  const progress = isHardware ? internalScroll : 0;
-
-  return (
-    <section
-      ref={ref}
-      className={`scene ${active ? 'active' : ''}`}
-      style={isHardware ? { height: '250vh', position: 'relative' } : {}}
-    >
-      <div className="scene-sticky" style={isHardware ? { position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' } : {}}>
-        <div className="scene-grid" />
-        <div className="scene-content">
-          {/* Left Side: Technical Copy & Dynamic Sequence Status */}
-          <div className="scene-copy">
-            <p>
-              {scene.index} / {scene.category}
-            </p>
-            <h2>
-              {scene.title.split('\n').map((line, i) => (
-                <span key={line}>
-                  {line}
-                  {i === 0 && <br />}
-                </span>
-              ))}
-            </h2>
-            <b>{scene.role}</b>
-            <article>{scene.description}</article>
-
-            <small style={{ marginTop: '24px' }}>
-              <ArrowDown size={14} />
-              {isHardware
-                ? 'SCROLL TO EXPLODE COMPONENT'
-                : 'SCROLL TO PROGRESS SUBSYSTEMS'}
-            </small>
-          </div>
-
-          {/* Right Side: Visual Stage */}
-          <div className="visual-stage" ref={visualStageRef}>
-            {isEsp32 ? (
-              <Esp32ExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isMicroSd ? (
-              <MicroSdExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isDisplay ? (
-              <DisplayExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isRegulator ? (
-              <RegulatorExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isThermistor ? (
-              <ThermistorExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isBatterySensor ? (
-              <BatterySensorExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isRfSensor ? (
-              <RfSensorExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isVibrationSensor ? (
-              <VibrationSensorExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isEnvSensor ? (
-              <EnvSensorExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isBattery ? (
-              <BatteryExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isMosfet ? (
-              <MosfetExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isTempSensor ? (
-              <TempSensorExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isConverter ? (
-              <ConverterExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isEnergyHarvesting ? (
-              <EnergyHarvestingExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isHeatPipe ? (
-              <HeatPipeExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isRadiator ? (
-              <RadiatorExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isStructure ? (
-              <StructureExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isPrototypeBoard ? (
-              <PrototypeBoardExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isAntenna ? (
-              <AntennaExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isInsulation ? (
-              <InsulationExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isSolderProtection ? (
-              <SolderProtectionExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isRadiationShield ? (
-              <RadiationShieldExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isLora ? (
-              <LoraExplodedView
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : isHardware ? (
-              <HorizontalExplodedView
-                scene={scene}
-                scrollProgress={progress}
-                isSceneActive={active}
-              />
-            ) : (
-              <Placeholder scene={scene} />
-            )}
-          </div>
+  const section=useRef(null), hardware=useRef(null);
+  const {progress,near}=useComponentStory(section);
+  const pose=componentStoryPose(progress);
+  const Renderer=VIEWERS[scene.id]??HorizontalExplodedView;
+  const lines=chapterLines(scene.title);
+  const longest=Math.max(...lines.map(line=>line.length));
+  useHardwareFraming(hardware,pose.explosion,near);
+  const stageNames={name:'01 / DISCOVER',assembled:'02 / ASSEMBLED',exploding:'03 / EXPLORE',complete:'03 / EXPLORED'};
+  const nextCue=Number(scene.index)===23?'CONTINUE TO COMPLETE SYSTEM':'CONTINUE TO NEXT COMPONENT';
+  return <section ref={section} className={`component-story ${near?'is-near':''}`} data-component={scene.id} data-stage={pose.stage} data-explosion={pose.explosion.toFixed(4)} aria-label={`${scene.title.replace(/\n/g,' ')} component inspection`}
+    style={{'--chapter-size':`${Math.min(16,135/longest)}vw`,'--title-opacity':pose.titleOpacity,'--title-y':`${pose.titleY}px`,'--title-scale':pose.titleScale,'--object-opacity':pose.objectOpacity,'--object-y':`${pose.objectY}px`,'--object-scale':pose.objectScale,'--details-opacity':pose.detailsOpacity,'--chapter-exit':1-pose.exit*.3}}>
+    <div className="component-story-sticky">
+      <div className="story-atmosphere" aria-hidden="true"><i /><b /></div>
+      <div className="story-topline"><span>PRĀŅA / COMPONENT ARCHIVE</span><span>{scene.index} <i>/ 23</i></span></div>
+      <div className="story-title" aria-hidden={pose.titleOpacity<.01}>
+        <p><span>{scene.index}</span> {scene.category} SYSTEM</p>
+        <h2>{lines.map((line,index)=><span key={index}>{line}</span>)}</h2>
+        <div className="story-title-bottom"><span>{scene.role}</span><ArrowDown size={24} strokeWidth={1} /></div>
+      </div>
+      <div className="story-caption" aria-hidden={pose.detailsOpacity<.01}>
+        <div><p>{scene.index} / {scene.category}</p><h3>{scene.title.replace(/\n/g,' ')}</h3></div>
+        <p>{scene.description}</p>
+      </div>
+      <div className="story-object" aria-hidden={pose.objectOpacity<.01} inert={pose.objectOpacity<.9?true:undefined}>
+        <div className="story-hardware" ref={hardware}>
+          {near && <Renderer scene={scene} scrollProgress={pose.explosion} isSceneActive={near} />}
         </div>
       </div>
-    </section>
-  );
+      <div className="story-footer"><span className="story-phase">{stageNames[pose.stage]}</span><span>{pose.stage==='name'?'SCROLL TO REVEAL':pose.stage==='assembled'?'SCROLL TO EXPLODE':pose.stage==='complete'?nextCue:'SCROLL BACK TO REASSEMBLE'} <ArrowDown size={12} /></span><span>{scene.category} / PRĀŅA</span></div>
+    </div>
+  </section>;
 }
