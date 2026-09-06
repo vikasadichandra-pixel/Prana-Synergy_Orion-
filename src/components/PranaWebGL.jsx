@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Environment, Lightformer, useGLTF, Html, OrbitControls, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
@@ -28,6 +28,8 @@ const PHASES = [
 export function PranaModel({ progressRef, reduced = false, onReady, hovering = true }) {
   const floating = useRef();
   const time = useRef(0);
+  const lastProgress = useRef(NaN);
+  const separationRef = useRef(0);
   const { scene } = useGLTF(MODEL);
   useEffect(() => { onReady?.(); }, [scene, onReady]);
   const clone = useMemo(() => {
@@ -55,34 +57,42 @@ export function PranaModel({ progressRef, reduced = false, onReady, hovering = t
   // Instance-owned materials let the upper layers recede during close-ups without
   // changing the shared GLB or the aircraft used by the preloader.
   const surfaces = useMemo(()=>INSPECTION_LAYERS.map(name=>{
-    const items=[];
+    const meshes=[],shared=new Map();
     clone.getObjectByName(name).traverse(mesh=>{
       if(!mesh.isMesh) return;
-      const materials=(Array.isArray(mesh.material)?mesh.material:[mesh.material]).map(material=>material.clone());
+      const materials=(Array.isArray(mesh.material)?mesh.material:[mesh.material]).map(original=>{
+        if(!shared.has(original)) {
+          const material=original.clone();
+          shared.set(original,{material,opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite});
+        }
+        return shared.get(original).material;
+      });
       mesh.material=Array.isArray(mesh.material)?materials:materials[0];
-      items.push({mesh,materials:materials.map(material=>({material,opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite}))});
+      meshes.push({mesh,transparent:materials[0].transparent});
     });
-    return items;
+    return {meshes,materials:[...shared.values()]};
   }),[clone]);
-  useEffect(()=>()=>surfaces.flat().forEach(item=>item.materials.forEach(({material})=>material.dispose())),[surfaces]);
+  useEffect(()=>()=>surfaces.forEach(layer=>layer.materials.forEach(({material})=>material.dispose())),[surfaces]);
   useFrame((_, delta) => {
     if (!reduced) time.current += Math.min(delta, .05);
+    floating.current.position.y = .1 + (hovering ? hoverOffset(time.current, separationRef.current, reduced) : 0);
+    rotors.forEach(rotor => { rotor.rotation.y = rotorAngle(time.current, rotor.userData.spinDirection, reduced); });
+    if(lastProgress.current===progressRef.current) return;
+    lastProgress.current=progressRef.current;
     const { separation, focus, weights } = inspectionPose(progressRef.current);
+    separationRef.current=separation;
+    floating.current.position.y = .1 + (hovering ? hoverOffset(time.current, separation, reduced) : 0);
     layers.forEach((layer, i) => { layer.position.y = TRAVEL[i] * separation; });
     upperLayers.forEach(({object,travel}) => {object.position.y = travel * separation;});
-    floating.current.position.y = .1 + (hovering ? hoverOffset(time.current, separation, reduced) : 0);
-    rotors.forEach(rotor => { rotor.rotation.y = rotorAngle(time.current, rotor.userData.spinDirection, reduced); });
-    surfaces.forEach((items,index)=>{
+    surfaces.forEach(({meshes,materials},index)=>{
       const visibility=1-.93*focus+.93*weights[index];
-      items.forEach(({mesh,materials})=>{
-        materials.forEach(({material,opacity,transparent,depthWrite})=>{
+      materials.forEach(({material,opacity,transparent,depthWrite})=>{
           const translucent=transparent || visibility<.999;
           if(material.transparent!==translucent) {material.transparent=translucent;material.needsUpdate=true;}
           material.opacity=opacity*visibility;
           material.depthWrite=depthWrite && visibility>.999;
-        });
-        mesh.castShadow=visibility>.95 && !materials[0].transparent;
       });
+      meshes.forEach(({mesh,transparent})=>{mesh.castShadow=visibility>.95 && !transparent;});
     });
   });
   return <group ref={floating} rotation={[0, Math.PI / 6, 0]}><primitive object={clone} dispose={null} /></group>;
@@ -93,6 +103,7 @@ const INITIAL_TARGET = [0, .4, 0];
 function InspectionCamera({ targetProgress, progressRef, controlsRef, rotationRef }) {
   const { camera, size, gl } = useThree();
   const { scene } = useGLTF(MODEL);
+  const lastFrame=useMemo(()=>({progress:NaN,width:0,height:0,rotation:new THREE.Quaternion()}),[]);
   const boxes=useMemo(()=>{
     scene.updateMatrixWorld(true);
     return INSPECTION_LAYERS.map(name=>{
@@ -122,18 +133,19 @@ function InspectionCamera({ targetProgress, progressRef, controlsRef, rotationRe
     return points;
   },[scene]);
   const scratch=useMemo(()=>({right:new THREE.Vector3(),up:new THREE.Vector3(),forward:new THREE.Vector3(),point:new THREE.Vector3(),target:new THREE.Vector3(),delta:new THREE.Vector3(),rotation:new THREE.Matrix4().makeRotationY(Math.PI/6)}),[]);
-  useFrame((_,delta) => {
+  useFrame(() => {
     const controls = controlsRef.current;
     if (!controls) return;
     // Wheel motion is already smoothed at document level. Keep the camera and
     // meshes on that same playhead, including the final hold before release.
     progressRef.current=targetProgress.current;
-    const pose = inspectionPose(progressRef.current);
     if (rotationRef.current) {
       camera.position.sub(controls.target).applyAxisAngle(camera.up, rotationRef.current).add(controls.target);
       rotationRef.current = 0;
     }
     camera.updateMatrixWorld();
+    if(lastFrame.progress===progressRef.current && lastFrame.width===size.width && lastFrame.height===size.height && lastFrame.rotation.equals(camera.quaternion)) return;
+    const pose = inspectionPose(progressRef.current);
     const {right,up,forward,point,target,rotation}=scratch;
     right.setFromMatrixColumn(camera.matrixWorld,0);up.setFromMatrixColumn(camera.matrixWorld,1);camera.getWorldDirection(forward);
     const projected=boxes.map((box,index)=>{
@@ -177,6 +189,7 @@ function InspectionCamera({ targetProgress, progressRef, controlsRef, rotationRe
     camera.zoom=zoom;
     camera.updateProjectionMatrix();
     controls.update();
+    lastFrame.progress=progressRef.current;lastFrame.width=size.width;lastFrame.height=size.height;lastFrame.rotation.copy(camera.quaternion);
     if(import.meta.env.DEV) {
       gl.domElement.dataset.inspectionPhase=String(pose.phase);
       gl.domElement.dataset.cameraZoom=zoom.toFixed(3);
@@ -212,7 +225,7 @@ function Arrival({ phase, children }) {
   return <group ref={group} scale={.035}>{children}</group>;
 }
 
-export function PranaCanvas({ progressRef, running = true, rotationRef, reduced = false, introPhase = 'ready' }) {
+export const PranaCanvas=memo(function PranaCanvas({ progressRef, running = true, rotationRef, reduced = false, introPhase = 'ready' }) {
   const controlsRef = useRef();
   const visualProgress = useRef(0);
   const defaultRotation = useRef(0);
@@ -238,7 +251,7 @@ export function PranaCanvas({ progressRef, running = true, rotationRef, reduced 
       target={INITIAL_TARGET} rotateSpeed={.6} minPolarAngle={.25} maxPolarAngle={Math.PI*.7}
       touches={{ONE:THREE.TOUCH.ROTATE,TWO:THREE.TOUCH.ROTATE}} />
   </Canvas>;
-}
+});
 
 class ViewerBoundary extends React.Component {
   state={failed:false};

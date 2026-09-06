@@ -1,5 +1,10 @@
 import { clamp01, ramp, sectionProgress } from './inspection.js';
 
+export function smoothSubProgress(progress,start,end) {
+  if(start===end) return progress>=start?1:0;
+  return ramp(progress,start,end);
+}
+
 export function componentStoryPose(value) {
   const p=clamp01(value);
   const dock=ramp(p,.14,.28), reveal=ramp(p,.24,.40);

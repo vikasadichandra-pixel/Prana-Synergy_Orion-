@@ -12,7 +12,7 @@ function Starfield() {
   const ref = useRef();
   const [positions, colors] = useMemo(() => {
     const positions = new Float32Array(4000 * 3), colors = new Float32Array(4000 * 3);
-    const lime = new THREE.Color('#c9e87b'), cyan = new THREE.Color('#58d3ff');
+    const lime = new THREE.Color('#c9e87b'), cyan = new THREE.Color('#58d3ff'), color=new THREE.Color();
     const noise = n => { const f = Math.sin(n * 127.1) * 43758.5453; return f - Math.floor(f); };
     for (let i = 0; i < 4000; i++) {
       const radius = 25 * Math.cbrt(noise(i + 1));
@@ -20,7 +20,7 @@ function Starfield() {
       positions[i*3] = radius * Math.sin(phi) * Math.cos(theta);
       positions[i*3+1] = radius * Math.sin(phi) * Math.sin(theta);
       positions[i*3+2] = radius * Math.cos(phi);
-      const color = lime.clone().lerp(cyan, Math.sin(positions[i*3+1] * .5) * .5 + .5);
+      color.copy(lime).lerp(cyan, Math.sin(positions[i*3+1] * .5) * .5 + .5);
       color.toArray(colors, i*3);
     }
     return [positions, colors];
@@ -42,7 +42,7 @@ function Flight({ clock, layout, wordmark, onReady }) {
   const { camera, size } = useThree();
   const vectors = useMemo(() => ({origin:new THREE.Vector3(), projected:new THREE.Vector3(), start:new THREE.Vector3(), end:new THREE.Vector3(), direction:new THREE.Vector3(), up:new THREE.Vector3(0,1,0)}), []);
   useFrame(() => {
-    const time = loaderPose(clock.current).flightTime;
+    const time = Math.max(0,clock.current-FLIGHT_START);
     const box = layout.current;
     if (!box) { aircraft.current.visible = false; return; }
     const units = 2 * 15 * Math.tan(Math.PI / 6) / size.height;
@@ -52,7 +52,7 @@ function Flight({ clock, layout, wordmark, onReady }) {
     const droneY = height * .5 + modelScale * 1.2;
     vectors.origin.set((box.x-size.width/2)*units,(size.height/2-box.y)*units,0);
     aircraft.current.visible = time > 0 && pose.vanish < 1;
-    aircraft.current.position.copy(vectors.origin).add(new THREE.Vector3(pose.x - size.width*units*.8*(1-pose.approach),pose.y,pose.z));
+    aircraft.current.position.set(vectors.origin.x+pose.x-size.width*units*.8*(1-pose.approach),vectors.origin.y+pose.y,vectors.origin.z+pose.z);
     aircraft.current.rotation.z = pose.bank;
     aircraft.current.scale.setScalar(1);
     model.current.position.y = droneY;
@@ -74,7 +74,7 @@ function Flight({ clock, layout, wordmark, onReady }) {
     if (wordmark.current) {
       const attached = pose.attached;
       vectors.projected.copy(vectors.origin);
-      if(attached) vectors.projected.add(new THREE.Vector3(pose.x,pose.y,pose.z));
+      if(attached) {vectors.projected.x+=pose.x;vectors.projected.y+=pose.y;vectors.projected.z+=pose.z;}
       vectors.projected.project(camera);
       const x = (vectors.projected.x+1)*size.width/2-box.x;
       const y = (1-vectors.projected.y)*size.height/2-box.y;
@@ -107,6 +107,8 @@ class FlightBoundary extends React.Component {
 export default function Preloader({ onComplete, onReveal }) {
   const [failed,setFailed] = useState(false), [done,setDone] = useState(false);
   const [phase,setPhase] = useState('BLUE FILL');
+  const phaseRef=useRef('BLUE FILL');
+  const [canvasActive,setCanvasActive]=useState(true);
   const root=useRef(), clock=useRef(0), ready=useRef(false), failedRef=useRef(false);
   const anchor=useRef(), wordmark=useRef(), fill=useRef(), telemetry=useRef(), layout=useRef();
   const modelReady=useCallback(()=>{ready.current=true;},[]);
@@ -138,7 +140,7 @@ export default function Preloader({ onComplete, onReveal }) {
     return ()=>clearTimeout(timeout);
   }, [fail]);
   useEffect(() => {
-    let frame, previous=performance.now(), revealed=false;
+    let frame, previous=performance.now(), revealed=false,canvasHidden=false;
     const tick=now=>{
       const delta=Math.min((now-previous)/1000,.05); previous=now;
       // The blue fill can run while the GLB loads; flight waits for both.
@@ -146,7 +148,7 @@ export default function Preloader({ onComplete, onReveal }) {
       const t=clock.current, pose=loaderPose(t);
       const revealAt=failedRef.current?FLIGHT_START+.4:REVEAL_SECONDS;
       if(t>=revealAt && !revealed) {revealed=true;window.scrollTo({top:0,behavior:'instant'});onReveal?.();}
-      setPhase(pose.phase);
+      if(phaseRef.current!==pose.phase) {phaseRef.current=pose.phase;setPhase(pose.phase);}
       if(fill.current) {
         // Accents share the same moving horizontal edge as the letters.
         // Keep the vertical bleed constant so nothing pops in on the final frame.
@@ -154,6 +156,7 @@ export default function Preloader({ onComplete, onReveal }) {
       }
       if(telemetry.current) telemetry.current.style.opacity=String(1-ramp(pose.flightTime,.15,.8));
       if(root.current) root.current.style.opacity=String(1-ramp(t,revealAt,revealAt+REVEAL_FADE_SECONDS));
+      if(!canvasHidden && t>=revealAt+REVEAL_FADE_SECONDS) {canvasHidden=true;setCanvasActive(false);}
       if(t>=revealAt+ARRIVAL_SECONDS+.08) {window.scrollTo({top:0,behavior:'instant'});setDone(true);onComplete?.();}
       else frame=requestAnimationFrame(tick);
     };
@@ -163,7 +166,7 @@ export default function Preloader({ onComplete, onReveal }) {
 
   if(done) return null;
   return <div ref={root} className="preloader" role="status" aria-label={`Loading PRĀŅA: ${phase}`}>
-    {!failed && <div className="preloader__canvas"><FlightBoundary onFailure={fail}>
+    {!failed && canvasActive && <div className="preloader__canvas"><FlightBoundary onFailure={fail}>
       <Canvas dpr={[1,1.5]} camera={{position:[0,0,15],fov:60,near:.1,far:100}} gl={{alpha:true,antialias:true}} onCreated={({gl})=>{gl.toneMapping=THREE.ACESFilmicToneMapping;gl.toneMappingExposure=1.1;}}>
         <ambientLight intensity={.65} /><directionalLight position={[-3,6,5]} intensity={4} color="#fff5e7" /><directionalLight position={[5,2,-3]} intensity={3} color="#8fdae7" />
         <Starfield />

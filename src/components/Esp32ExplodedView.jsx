@@ -1,7 +1,6 @@
+import { useExplodedParts } from '../hooks/useHardwareFraming';
 import { layoutExplodedParts } from '../lib/explodedLayout';
-﻿import React, { useState } from 'react';
-import { Layers, ChevronRight } from 'lucide-react';
-import HorizontalExplodedView from './HorizontalExplodedView';
+import React, { useState, useMemo, useRef } from 'react';
 
 // Physical coordinates in 1024 x 1536 artboard:
 // PCB: X: 215, Y: 445, W: 605, H: 740
@@ -172,22 +171,15 @@ const HORIZONTAL_PARTS_CONFIG = layoutExplodedParts([
   }
 ]);
 
-function smoothSubProgress(overallProgress, start, end) {
-  if (start === end) return overallProgress >= start ? 1 : 0;
-  if (overallProgress <= start) return 0;
-  if (overallProgress >= end) return 1;
-  const t = (overallProgress - start) / (end - start);
-  return t * t * (3 - 2 * t);
-}
 
-export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = false }) {
+export default function Esp32ExplodedView({ scrollProgress = 0 }) {
   const [hoveredPart, setHoveredPart] = useState(null);
 
   const progress = Math.max(0, Math.min(1, scrollProgress));
-  const isExploded = progress >= 0.08;
-  const isFullyExploded = progress >= 0.88;
+  const partGroupRefs=useRef({}),lineGroupRefs=useRef({}),linesContainerRef=useRef(null);
+  useExplodedParts(HORIZONTAL_PARTS_CONFIG,progress,partGroupRefs,lineGroupRefs,linesContainerRef);
 
-  return (
+  return useMemo(() => (
     <div
       className="esp32-horizontal-view-container"
       style={{
@@ -261,31 +253,26 @@ export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = 
           </defs>
 
           {/* Dynamic Horizontal Laser Projection Lines */}
-          <g opacity={progress > 0.04 ? 1 : 0} style={{ transition: 'opacity 0.25s' }}>
+          <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
             {[...HORIZONTAL_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
-              const subP = smoothSubProgress(progress, part.start, part.end);
-              if (subP <= 0.02) return null;
-
-              const currentX = part.assembled.x + (part.exploded.x - part.assembled.x) * subP;
-              const currentY = part.assembled.y + (part.exploded.y - part.assembled.y) * subP;
 
               let x1 = part.line.x1;
               let x2 = part.line.x2;
               let y1 = part.line.y1;
               let y2 = part.line.y2;
 
-              if (x1 === 'right') x1 = currentX + part.w;
-              if (x1 === 'left') x1 = currentX;
-              if (x2 === 'right') x2 = currentX + part.w;
-              if (x2 === 'left') x2 = currentX;
+              if (x1 === 'right') x1 = part.assembled.x + part.w;
+              if (x1 === 'left') x1 = part.assembled.x;
+              if (x2 === 'right') x2 = part.assembled.x + part.w;
+              if (x2 === 'left') x2 = part.assembled.x;
 
               const isOrange = part.id.includes('usb') || part.id.includes('button');
               const color = isOrange ? '#ff8158' : '#c9e87b';
               const marker = isOrange ? 'url(#esp32-marker-orange)' : 'url(#esp32-marker-lime)';
 
               return (
-                <g key={`line-${part.id}`} data-wire-id={part.id}>
+                <g ref={el=>{lineGroupRefs.current[part.id]=el;}} opacity="0" key={`line-${part.id}`} data-wire-id={part.id}>
                   <line
                     x1={x1}
                     y1={y1}
@@ -305,15 +292,12 @@ export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = 
 
           {/* 10 Physical Parts moving horizontally */}
           {[...HORIZONTAL_PARTS_CONFIG].reverse().map((part) => {
-            const subP = smoothSubProgress(progress, part.start, part.end);
-            const currentX = part.assembled.x + (part.exploded.x - part.assembled.x) * subP;
-            const currentY = part.assembled.y + (part.exploded.y - part.assembled.y) * subP;
             const isHovered = hoveredPart === part.id;
 
             return (
               <g
                 key={part.id} data-part-id={part.id}
-                transform={`translate(${currentX}, ${currentY})`}
+                ref={el=>{partGroupRefs.current[part.id]=el;}} transform={`translate(${part.assembled.x}, ${part.assembled.y})`}
                 onMouseEnter={() => setHoveredPart(part.id)}
                 onMouseLeave={() => setHoveredPart(null)}
                 style={{ cursor: 'pointer', willChange: 'transform' }}
@@ -412,5 +396,5 @@ export default function Esp32ExplodedView({ scrollProgress = 0, isSceneActive = 
         </div>
       </div>
     </div>
-  );
+  ), [hoveredPart]);
 }

@@ -1,5 +1,6 @@
+import { useExplodedParts } from '../hooks/useHardwareFraming';
 import { layoutExplodedParts } from '../lib/explodedLayout';
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 
 const SOLDER_PARTS_CONFIG = layoutExplodedParts([
   {
@@ -48,13 +49,6 @@ const SOLDER_PARTS_CONFIG = layoutExplodedParts([
   }
 ]);
 
-function smoothSubProgress(overallProgress, start, end) {
-  if (start === end) return overallProgress >= start ? 1 : 0;
-  if (overallProgress <= start) return 0;
-  if (overallProgress >= end) return 1;
-  const t = (overallProgress - start) / (end - start);
-  return t * t * (3 - 2 * t);
-}
 
 export default function SolderProtectionExplodedView({ scrollProgress = 0 }) {
   const [hoveredPart, setHoveredPart] = useState(null);
@@ -63,57 +57,14 @@ export default function SolderProtectionExplodedView({ scrollProgress = 0 }) {
   const partGroupRefs = useRef({});
   const lineGroupRefs = useRef({});
   const linesContainerRef = useRef(null);
-  const lastProgressRef = useRef(-1);
 
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
   // Direct DOM mutation for transforms (bypass React render cycle)
-  useLayoutEffect(() => {
-    if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
-    lastProgressRef.current = progress;
-
-    if (linesContainerRef.current) {
-      linesContainerRef.current.setAttribute('opacity', progress > 0.04 ? '1' : '0');
-    }
-
-    SOLDER_PARTS_CONFIG.forEach((part) => {
-      const subP = smoothSubProgress(progress, part.start, part.end);
-      const currentX = part.assembled.x + (part.exploded.x - part.assembled.x) * subP;
-      const currentY = part.assembled.y + (part.exploded.y - part.assembled.y) * subP;
-
-      const partEl = partGroupRefs.current[part.id];
-      if (partEl) {
-        partEl.setAttribute('transform', `translate(${currentX}, ${currentY})`);
-      }
-
-      const lineEl = lineGroupRefs.current[part.id];
-      if (lineEl && part.line) {
-        if (subP <= 0.02) {
-          lineEl.setAttribute('opacity', '0');
-        } else {
-          lineEl.setAttribute('opacity', '1');
-          const lineChild = lineEl.querySelector('line');
-          if (lineChild) {
-            let x1 = part.line.x1;
-            let x2 = part.line.x2;
-            const y1 = part.line.y1;
-            const y2 = part.line.y2;
-            if (x1 === 'right') x1 = currentX + part.w;
-            if (x1 === 'left') x1 = currentX;
-            if (x2 === 'right') x2 = currentX + part.w;
-            if (x2 === 'left') x2 = currentX;
-            lineChild.setAttribute('x1', x1);
-            lineChild.setAttribute('y1', y1);
-            lineChild.setAttribute('x2', x2);
-            lineChild.setAttribute('y2', y2);
-          }
-        }
-      }
-    });
-  }, [progress]);
+  useExplodedParts(SOLDER_PARTS_CONFIG, progress, partGroupRefs, lineGroupRefs, linesContainerRef);
 
 
-  return (
+  return useMemo(() => (
     <div
       className="solder-view-container"
       style={{
@@ -223,5 +174,5 @@ export default function SolderProtectionExplodedView({ scrollProgress = 0 }) {
         </div>
       </div>
     </div>
-  );
+  ), [hoveredPart]);
 }

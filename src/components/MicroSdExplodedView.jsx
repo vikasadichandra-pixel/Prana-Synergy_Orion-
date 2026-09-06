@@ -1,5 +1,6 @@
+import { useExplodedParts } from '../hooks/useHardwareFraming';
 import { layoutExplodedParts } from '../lib/explodedLayout';
-﻿import React, { useState, useRef, useLayoutEffect, useCallback } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 
 // SanDisk Extreme PRO MicroSD card physical discrete parts
 // Coordinates in 1200 x 650 artboard:
@@ -111,78 +112,27 @@ const MICROSD_PARTS_CONFIG = layoutExplodedParts([
   }
 ]);
 
-function smoothSubProgress(overallProgress, start, end) {
-  if (start === end) return overallProgress >= start ? 1 : 0;
-  if (overallProgress <= start) return 0;
-  if (overallProgress >= end) return 1;
-  const t = (overallProgress - start) / (end - start);
-  return t * t * (3 - 2 * t);
-}
 
-export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive = false }) {
+export default function MicroSdExplodedView({ scrollProgress = 0 }) {
   const [hoveredPart, setHoveredPart] = useState(null);
 
   // Refs for direct DOM mutation (bypass React render cycle)
   const partGroupRefs = useRef({});
   const lineGroupRefs = useRef({});
   const linesContainerRef = useRef(null);
-  const lastProgressRef = useRef(-1);
 
   const progress = Math.max(0, Math.min(1, scrollProgress));
 
   // Direct DOM mutation for transforms (bypass React render cycle)
-  useLayoutEffect(() => {
-    if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
-    lastProgressRef.current = progress;
+  useExplodedParts(MICROSD_PARTS_CONFIG, progress, partGroupRefs, lineGroupRefs, linesContainerRef);
 
-    if (linesContainerRef.current) {
-      linesContainerRef.current.setAttribute('opacity', progress > 0.04 ? '1' : '0');
-    }
-
-    MICROSD_PARTS_CONFIG.forEach((part) => {
-      const subP = smoothSubProgress(progress, part.start, part.end);
-      const currentX = part.assembled.x + (part.exploded.x - part.assembled.x) * subP;
-      const currentY = part.assembled.y + (part.exploded.y - part.assembled.y) * subP;
-
-      const partEl = partGroupRefs.current[part.id];
-      if (partEl) {
-        partEl.setAttribute('transform', `translate(${currentX}, ${currentY})`);
-      }
-
-      const lineEl = lineGroupRefs.current[part.id];
-      if (lineEl && part.line) {
-        if (subP <= 0.02) {
-          lineEl.setAttribute('opacity', '0');
-        } else {
-          lineEl.setAttribute('opacity', '1');
-          const lineChild = lineEl.querySelector('line');
-          if (lineChild) {
-            let x1 = part.line.x1;
-            let x2 = part.line.x2;
-            const y1 = part.line.y1;
-            const y2 = part.line.y2;
-            if (x1 === 'right') x1 = currentX + part.w;
-            if (x1 === 'left') x1 = currentX;
-            if (x2 === 'right') x2 = currentX + part.w;
-            if (x2 === 'left') x2 = currentX;
-            lineChild.setAttribute('x1', x1);
-            lineChild.setAttribute('y1', y1);
-            lineChild.setAttribute('x2', x2);
-            lineChild.setAttribute('y2', y2);
-          }
-        }
-      }
-    });
-  }, [progress]);
-
-  const isExploded = progress >= 0.06;
 
   // MicroSD silhouette path helper
   // Normal MicroSD shape: 130 wide x 190 tall with bottom-right bevel/notch and top rounded corners
   const sdOuterPath = (w, h) =>
     `M 8,0 L ${w - 8},0 Q ${w},0 ${w},8 L ${w},${h - 42} L ${w - 14},${h - 24} L ${w - 14},${h - 8} Q ${w - 14},${h} ${w - 22},${h} L 18,${h} Q 0,${h} 0,${h - 18} L 0,8 Q 0,0 8,0 Z`;
 
-  return (
+  return useMemo(() => (
     <div
       className="microsd-horizontal-view-container"
       style={{
@@ -290,21 +240,16 @@ export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive 
           <g ref={linesContainerRef} opacity="0" style={{ transition: 'opacity 0.25s' }}>
             {[...MICROSD_PARTS_CONFIG].reverse().map((part) => {
               if (!part.line) return null;
-              const subP = smoothSubProgress(progress, part.start, part.end);
-              if (subP <= 0.02) return null;
-
-              const currentX = part.assembled.x + (part.exploded.x - part.assembled.x) * subP;
-              const currentY = part.assembled.y + (part.exploded.y - part.assembled.y) * subP;
 
               let x1 = part.line.x1;
               let x2 = part.line.x2;
               let y1 = part.line.y1;
               let y2 = part.line.y2;
 
-              if (x1 === 'right') x1 = currentX + part.w;
-              if (x1 === 'left') x1 = currentX;
-              if (x2 === 'right') x2 = currentX + part.w;
-              if (x2 === 'left') x2 = currentX;
+              if (x1 === 'right') x1 = part.assembled.x + part.w;
+              if (x1 === 'left') x1 = part.assembled.x;
+              if (x2 === 'right') x2 = part.assembled.x + part.w;
+              if (x2 === 'left') x2 = part.assembled.x;
 
               const isOrange = part.id.includes('nand') || part.id.includes('contact');
               const color = isOrange ? '#ff8158' : '#c9e87b';
@@ -331,9 +276,6 @@ export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive 
 
           {/* 7 Physical Discrete MicroSD Parts */}
           {[...MICROSD_PARTS_CONFIG].reverse().map((part) => {
-            const subP = smoothSubProgress(progress, part.start, part.end);
-            const currentX = part.assembled.x + (part.exploded.x - part.assembled.x) * subP;
-            const currentY = part.assembled.y + (part.exploded.y - part.assembled.y) * subP;
             const isHovered = hoveredPart === part.id;
 
             return (
@@ -587,5 +529,5 @@ export default function MicroSdExplodedView({ scrollProgress = 0, isSceneActive 
         </div>
       </div>
     </div>
-  );
+  ), [hoveredPart]);
 }

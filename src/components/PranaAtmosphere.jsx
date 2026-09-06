@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
 // One lightweight, full-stage 2D canvas keeps wind and dust behind the 3D model
 // without creating another WebGL context. No React updates inside the draw loop.
-export default function PranaAtmosphere({ running, reduced }) {
+export default memo(function PranaAtmosphere({ running, reduced }) {
   const canvasRef = useRef(null);
   const time = useRef(0);
   useEffect(() => {
@@ -56,4 +56,4 @@ export default function PranaAtmosphere({ running, reduced }) {
     <div className="prana-sweep" />
     <canvas ref={canvasRef} className="prana-wind" />
   </div>;
-}
+});

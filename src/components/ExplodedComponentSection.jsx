@@ -1,29 +1,29 @@
-import React, { memo, useRef } from 'react';
+import React, { lazy, memo, Suspense, useMemo, useRef } from 'react';
 import { ArrowDown } from 'lucide-react';
-import Esp32ExplodedView from './Esp32ExplodedView';
-import MicroSdExplodedView from './MicroSdExplodedView';
-import DisplayExplodedView from './DisplayExplodedView';
-import BatteryExplodedView from './BatteryExplodedView';
-import AntennaExplodedView from './AntennaExplodedView';
-import HorizontalExplodedView from './HorizontalExplodedView';
-import RegulatorExplodedView from './RegulatorExplodedView';
-import ThermistorExplodedView from './ThermistorExplodedView';
-import BatterySensorExplodedView from './BatterySensorExplodedView';
-import RfSensorExplodedView from './RfSensorExplodedView';
-import VibrationSensorExplodedView from './VibrationSensorExplodedView';
-import EnvSensorExplodedView from './EnvSensorExplodedView';
-import MosfetExplodedView from './MosfetExplodedView';
-import TempSensorExplodedView from './TempSensorExplodedView';
-import ConverterExplodedView from './ConverterExplodedView';
-import EnergyHarvestingExplodedView from './EnergyHarvestingExplodedView';
-import HeatPipeExplodedView from './HeatPipeExplodedView';
-import RadiatorExplodedView from './RadiatorExplodedView';
-import StructureExplodedView from './StructureExplodedView';
-import PrototypeBoardExplodedView from './PrototypeBoardExplodedView';
-import LoraExplodedView from './LoraExplodedView';
-import InsulationExplodedView from './InsulationExplodedView';
-import SolderProtectionExplodedView from './SolderProtectionExplodedView';
-import RadiationShieldExplodedView from './RadiationShieldExplodedView';
+const Esp32ExplodedView=lazy(()=>import('./Esp32ExplodedView'));
+const MicroSdExplodedView=lazy(()=>import('./MicroSdExplodedView'));
+const DisplayExplodedView=lazy(()=>import('./DisplayExplodedView'));
+const BatteryExplodedView=lazy(()=>import('./BatteryExplodedView'));
+const AntennaExplodedView=lazy(()=>import('./AntennaExplodedView'));
+const HorizontalExplodedView=lazy(()=>import('./HorizontalExplodedView'));
+const RegulatorExplodedView=lazy(()=>import('./RegulatorExplodedView'));
+const ThermistorExplodedView=lazy(()=>import('./ThermistorExplodedView'));
+const BatterySensorExplodedView=lazy(()=>import('./BatterySensorExplodedView'));
+const RfSensorExplodedView=lazy(()=>import('./RfSensorExplodedView'));
+const VibrationSensorExplodedView=lazy(()=>import('./VibrationSensorExplodedView'));
+const EnvSensorExplodedView=lazy(()=>import('./EnvSensorExplodedView'));
+const MosfetExplodedView=lazy(()=>import('./MosfetExplodedView'));
+const TempSensorExplodedView=lazy(()=>import('./TempSensorExplodedView'));
+const ConverterExplodedView=lazy(()=>import('./ConverterExplodedView'));
+const EnergyHarvestingExplodedView=lazy(()=>import('./EnergyHarvestingExplodedView'));
+const HeatPipeExplodedView=lazy(()=>import('./HeatPipeExplodedView'));
+const RadiatorExplodedView=lazy(()=>import('./RadiatorExplodedView'));
+const StructureExplodedView=lazy(()=>import('./StructureExplodedView'));
+const PrototypeBoardExplodedView=lazy(()=>import('./PrototypeBoardExplodedView'));
+const LoraExplodedView=lazy(()=>import('./LoraExplodedView'));
+const InsulationExplodedView=lazy(()=>import('./InsulationExplodedView'));
+const SolderProtectionExplodedView=lazy(()=>import('./SolderProtectionExplodedView'));
+const RadiationShieldExplodedView=lazy(()=>import('./RadiationShieldExplodedView'));
 import useComponentStory from '../hooks/useComponentStory';
 import useHardwareFraming from '../hooks/useHardwareFraming';
 import { componentStoryPose, chapterLines } from '../lib/componentStory';
@@ -41,14 +41,19 @@ const VIEWERS = Object.fromEntries(Object.entries({
   lora:LoraExplodedView, antenna:AntennaExplodedView,
 }).map(([id, Viewer]) => [id, memo(Viewer)]));
 
+function FramedHardware({ Renderer, scene, progress }) {
+  const hardware=useRef(null);
+  useHardwareFraming(hardware,progress,true);
+  return <div className="story-hardware" ref={hardware}><Renderer scene={scene} scrollProgress={progress} isSceneActive /></div>;
+}
+
 export default function ExplodedComponentSection({ scene }) {
-  const section=useRef(null), hardware=useRef(null);
+  const section=useRef(null);
   const {progress,near}=useComponentStory(section);
   const pose=componentStoryPose(progress);
   const Renderer=VIEWERS[scene.id]??HorizontalExplodedView;
-  const lines=chapterLines(scene.title);
+  const lines=useMemo(()=>chapterLines(scene.title),[scene.title]);
   const longest=Math.max(...lines.map(line=>line.length));
-  useHardwareFraming(hardware,pose.explosion,near);
   const stageNames={name:'01 / DISCOVER',assembled:'02 / ASSEMBLED',exploding:'03 / EXPLORE',complete:'03 / EXPLORED'};
   const nextCue=Number(scene.index)===23?'CONTINUE TO COMPLETE SYSTEM':'CONTINUE TO NEXT COMPONENT';
   return <section ref={section} className={`component-story ${near?'is-near':''}`} data-component={scene.id} data-stage={pose.stage} data-explosion={pose.explosion.toFixed(4)} aria-label={`${scene.title.replace(/\n/g,' ')} component inspection`}
@@ -66,9 +71,7 @@ export default function ExplodedComponentSection({ scene }) {
         <p>{scene.description}</p>
       </div>
       <div className="story-object" aria-hidden={pose.objectOpacity<.01} inert={pose.objectOpacity<.9?true:undefined}>
-        <div className="story-hardware" ref={hardware}>
-          {near && <Renderer scene={scene} scrollProgress={pose.explosion} isSceneActive={near} />}
-        </div>
+        {near && <Suspense fallback={null}><FramedHardware Renderer={Renderer} scene={scene} progress={pose.explosion} /></Suspense>}
       </div>
       <div className="story-footer"><span className="story-phase">{stageNames[pose.stage]}</span><span>{pose.stage==='name'?'SCROLL TO REVEAL':pose.stage==='assembled'?'SCROLL TO EXPLODE':pose.stage==='complete'?nextCue:'SCROLL BACK TO REASSEMBLE'} <ArrowDown size={12} /></span><span>{scene.category} / PRĀŅA</span></div>
     </div>
