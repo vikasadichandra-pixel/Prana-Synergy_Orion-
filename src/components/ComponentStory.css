@@ -1,7 +1,7 @@
 /* Component chapters only. The drone and preloader retain their own styling. */
 [id^='scene-']:has(>.component-story) { scroll-margin-top:-68px; }
 /* Every chapter gets the same distance for its reveal, explosion and final hold. */
-.component-story { height:660vh; position:relative; background:#030705; }
+.component-story { height:660vh; position:relative; background:#030705; content-visibility:auto; contain-intrinsic-size:auto 660vh; }
 .component-story-sticky { position:sticky; top:0; height:100vh; overflow:clip; isolation:isolate; background:#050a07; color:#ecf0ea; }
 .story-atmosphere { position:absolute; inset:0; z-index:-1; overflow:hidden; background:radial-gradient(ellipse at 52% 57%,#17352966,transparent 58%); }
 .story-atmosphere:after { content:''; position:absolute; inset:0; opacity:.18; background-image:linear-gradient(#88ae9c15 1px,transparent 1px),linear-gradient(90deg,#88ae9c15 1px,transparent 1px); background-size:100px 100px; mask-image:radial-gradient(ellipse,black,transparent 72%); }

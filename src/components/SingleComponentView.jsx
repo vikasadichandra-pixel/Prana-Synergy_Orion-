@@ -1,6 +1,5 @@
 import React from 'react';
-import { Zap, Radio, Thermometer, ShieldAlert, Cpu } from 'lucide-react';
-import CutoutImage from '../CutoutImage';
+
 
 export default function SingleComponentView({ scene }) {
   const isRf = scene.effect === 'rf';

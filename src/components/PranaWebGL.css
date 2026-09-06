@@ -1,5 +1,5 @@
 .prana-webgl { height:620vh; position:relative; background:#030705; }
-.prana-sticky { position:sticky; top:0; height:100vh; overflow:clip; isolation:isolate; background:radial-gradient(ellipse at 50% 54%,#10231b 0%,#060d09 44%,#030705 77%); }
+.prana-sticky { position:sticky; top:0; height:100vh; overflow:clip; isolation:isolate; background:radial-gradient(ellipse at 50% 54%,#10231b 0%,#060d09 44%,#030705 77%); contain:layout style; }
 .prana-ambient { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0; mask-image:linear-gradient(transparent 5%,black 27%,black 78%,transparent); }
 .prana-aurora { position:absolute; width:75%; height:75%; border-radius:50%; filter:blur(55px); will-change:transform; }
 .prana-aurora-lime { left:5%; top:18%; background:radial-gradient(ellipse,#91ce4121,transparent 65%); animation:prana-aurora-drift 19s ease-in-out infinite alternate; }

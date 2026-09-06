@@ -6,15 +6,13 @@ import { PranaModel } from './PranaWebGL';
 import { departurePose, loaderPose, liftOffDistance, FLIGHT_START, REVEAL_SECONDS, REVEAL_FADE_SECONDS, ARRIVAL_SECONDS } from '../lib/introFlight';
 import { ramp } from '../lib/inspection';
 import './Preloader.css';
-
-// The original spherical lime/cyan particle field and camera are preserved.
 function Starfield() {
   const ref = useRef();
   const [positions, colors] = useMemo(() => {
-    const positions = new Float32Array(4000 * 3), colors = new Float32Array(4000 * 3);
+    const positions = new Float32Array(1500 * 3), colors = new Float32Array(1500 * 3);
     const lime = new THREE.Color('#c9e87b'), cyan = new THREE.Color('#58d3ff'), color=new THREE.Color();
     const noise = n => { const f = Math.sin(n * 127.1) * 43758.5453; return f - Math.floor(f); };
-    for (let i = 0; i < 4000; i++) {
+    for (let i = 0; i < 1500; i++) {
       const radius = 25 * Math.cbrt(noise(i + 1));
       const theta = noise(i + 4100) * Math.PI * 2, phi = Math.acos(2 * noise(i + 8200) - 1);
       positions[i*3] = radius * Math.sin(phi) * Math.cos(theta);
@@ -32,7 +30,7 @@ function Starfield() {
   return <points ref={ref}><bufferGeometry>
     <bufferAttribute attach="attributes-position" args={[positions,3]} />
     <bufferAttribute attach="attributes-color" args={[colors,3]} />
-  </bufferGeometry><pointsMaterial size={.06} vertexColors transparent opacity={.8} depthWrite={false} sizeAttenuation blending={THREE.AdditiveBlending} /></points>;
+  </bufferGeometry><pointsMaterial size={.08} vertexColors transparent opacity={.8} depthWrite={false} sizeAttenuation blending={THREE.AdditiveBlending} /></points>;
 }
 
 function Flight({ clock, layout, wordmark, onReady }) {
@@ -167,11 +165,11 @@ export default function Preloader({ onComplete, onReveal }) {
   if(done) return null;
   return <div ref={root} className="preloader" role="status" aria-label={`Loading PRĀŅA: ${phase}`}>
     {!failed && canvasActive && <div className="preloader__canvas"><FlightBoundary onFailure={fail}>
-      <Canvas dpr={[1,1.5]} camera={{position:[0,0,15],fov:60,near:.1,far:100}} gl={{alpha:true,antialias:true}} onCreated={({gl})=>{gl.toneMapping=THREE.ACESFilmicToneMapping;gl.toneMappingExposure=1.1;}}>
-        <ambientLight intensity={.65} /><directionalLight position={[-3,6,5]} intensity={4} color="#fff5e7" /><directionalLight position={[5,2,-3]} intensity={3} color="#8fdae7" />
+      <Canvas dpr={1} camera={{position:[0,0,15],fov:60,near:.1,far:100}} gl={{alpha:true,antialias:false,powerPreference:'high-performance'}} onCreated={({gl})=>{gl.toneMapping=THREE.ACESFilmicToneMapping;gl.toneMappingExposure=1.1;}}>
+        <ambientLight intensity={.65} /><directionalLight position={[-3,6,5]} intensity={5} color="#fff5e7" />
         <Starfield />
         <Suspense fallback={null}>
-          <Environment resolution={128}><Lightformer position={[-3,5,2]} rotation={[-1,0,0]} scale={[5,3,1]} intensity={4} /><Lightformer position={[5,1,-3]} rotation={[0,-Math.PI/2,0]} scale={[2,7,1]} intensity={5} color="#b7e8e6" /></Environment>
+          <Environment resolution={64}><Lightformer position={[-3,5,2]} rotation={[-1,0,0]} scale={[5,3,1]} intensity={4} /><Lightformer position={[5,1,-3]} rotation={[0,-Math.PI/2,0]} scale={[2,7,1]} intensity={5} color="#b7e8e6" /></Environment>
           <Flight clock={clock} layout={layout} wordmark={wordmark} onReady={modelReady} />
         </Suspense>
       </Canvas>

@@ -9,5 +9,5 @@
 .preloader__text-anchor { position:relative; }
 .preloader__text-loader { position:relative; font-size:clamp(80px,18vw,240px); font-weight:800; line-height:1; letter-spacing:-2px; transform-origin:center; will-change:transform; }
 .preloader__text-base { color:var(--preloader-lime); text-shadow:0 0 60px rgba(201,232,123,.5); }
-.preloader__text-fill { position:absolute; inset:0; color:var(--preloader-bg); -webkit-text-stroke:2px var(--preloader-cyan); }
+.preloader__text-fill { position:absolute; inset:0; color:var(--preloader-bg); -webkit-text-stroke:2px var(--preloader-cyan); will-change:clip-path; }
 @media(max-width:600px) { .preloader__telemetry { font-size:7px; letter-spacing:1.4px; gap:8px; }.preloader__content { gap:1.4rem; }.preloader__text-loader { font-size:clamp(64px,20vw,120px); letter-spacing:-2px; } }

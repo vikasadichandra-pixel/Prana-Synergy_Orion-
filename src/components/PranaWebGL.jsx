@@ -34,11 +34,11 @@ export function PranaModel({ progressRef, reduced = false, onReady, hovering = t
   useEffect(() => { onReady?.(); }, [scene, onReady]);
   const clone = useMemo(() => {
     const copy = scene.clone(true);
-    copy.traverse(object => {
+    if(hovering) copy.traverse(object => {
       if (object.isMesh) { object.castShadow = !object.material.transparent && !object.material.transmission; object.receiveShadow = true; }
     });
     return copy;
-  }, [scene]);
+  }, [scene, hovering]);
   const layers = useMemo(() => ASSEMBLIES.map(name => {
     const object = clone.getObjectByName(name);
     if (!object) throw new Error(`Missing PRANA assembly: ${name}`);
@@ -56,32 +56,40 @@ export function PranaModel({ progressRef, reduced = false, onReady, hovering = t
   }), [clone]);
   // Instance-owned materials let the upper layers recede during close-ups without
   // changing the shared GLB or the aircraft used by the preloader.
-  const surfaces = useMemo(()=>INSPECTION_LAYERS.map(name=>{
-    const meshes=[],shared=new Map();
-    clone.getObjectByName(name).traverse(mesh=>{
-      if(!mesh.isMesh) return;
-      const materials=(Array.isArray(mesh.material)?mesh.material:[mesh.material]).map(original=>{
-        if(!shared.has(original)) {
-          const material=original.clone();
-          shared.set(original,{material,opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite});
-        }
-        return shared.get(original).material;
+  // Skip the expensive material cloning when in preloader mode (hovering=false).
+  const surfaces = useMemo(()=>{
+    if(!hovering) return [];
+    return INSPECTION_LAYERS.map(name=>{
+      const meshes=[],shared=new Map();
+      clone.getObjectByName(name).traverse(mesh=>{
+        if(!mesh.isMesh) return;
+        const materials=(Array.isArray(mesh.material)?mesh.material:[mesh.material]).map(original=>{
+          if(!shared.has(original)) {
+            const material=original.clone();
+            shared.set(original,{material,opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite});
+          }
+          return shared.get(original).material;
+        });
+        mesh.material=Array.isArray(mesh.material)?materials:materials[0];
+        meshes.push({mesh,transparent:materials[0].transparent});
       });
-      mesh.material=Array.isArray(mesh.material)?materials:materials[0];
-      meshes.push({mesh,transparent:materials[0].transparent});
+      return {meshes,materials:[...shared.values()]};
     });
-    return {meshes,materials:[...shared.values()]};
-  }),[clone]);
+  },[clone,hovering]);
   useEffect(()=>()=>surfaces.forEach(layer=>layer.materials.forEach(({material})=>material.dispose())),[surfaces]);
   useFrame((_, delta) => {
     if (!reduced) time.current += Math.min(delta, .05);
-    floating.current.position.y = .1 + (hovering ? hoverOffset(time.current, separationRef.current, reduced) : 0);
     rotors.forEach(rotor => { rotor.rotation.y = rotorAngle(time.current, rotor.userData.spinDirection, reduced); });
-    if(lastProgress.current===progressRef.current) return;
+    // Preloader mode: just spin rotors, no inspection processing needed.
+    if(!hovering) return;
+    if(lastProgress.current===progressRef.current) {
+      floating.current.position.y = .1 + hoverOffset(time.current, separationRef.current, reduced);
+      return;
+    }
     lastProgress.current=progressRef.current;
     const { separation, focus, weights } = inspectionPose(progressRef.current);
     separationRef.current=separation;
-    floating.current.position.y = .1 + (hovering ? hoverOffset(time.current, separation, reduced) : 0);
+    floating.current.position.y = .1 + hoverOffset(time.current, separation, reduced);
     layers.forEach((layer, i) => { layer.position.y = TRAVEL[i] * separation; });
     upperLayers.forEach(({object,travel}) => {object.position.y = travel * separation;});
     surfaces.forEach(({meshes,materials},index)=>{
@@ -114,7 +122,6 @@ function InspectionCamera({ targetProgress, progressRef, controlsRef, rotationRe
   },[scene]);
   const openingPoints=useMemo(()=>{
     const points=[],point=new THREE.Vector3();
-    scene.updateMatrixWorld(true);
     // Fit the real airframe silhouette, not the empty corners of a large cube.
     scene.getObjectByName('Chassis').traverse(mesh=>{
       if(!mesh.isMesh) return;

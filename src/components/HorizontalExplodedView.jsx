@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Zap, Radio, Thermometer, ShieldAlert, Cpu } from 'lucide-react';
 
 const COMPONENT_CUTOUT_MAP = {
   esp32: {

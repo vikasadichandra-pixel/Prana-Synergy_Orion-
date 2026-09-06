@@ -232,15 +232,14 @@ export default function Esp32ExplodedView({ scrollProgress = 0 }) {
           <div style={{ position: 'absolute', bottom: '10px', right: '10px', width: '12px', height: '12px', borderBottom: '2px solid rgba(201,232,123,0.6)', borderRight: '2px solid rgba(201,232,123,0.6)' }} />
         </div>
 
-        {/* SVG Artboard: 1024 x 1536 */}
+        {/* SVG Artboard: 1024 x 1536 — no root CSS filter to preserve image sharpness */}
         <svg
           viewBox="0 0 1024 1536"
           preserveAspectRatio="xMidYMid meet"
           style={{
             width: '100%',
             height: '100%',
-            overflow: 'visible',
-            filter: 'drop-shadow(0 16px 26px rgba(0,0,0,0.6))'
+            overflow: 'visible'
           }}
         >
           <defs>

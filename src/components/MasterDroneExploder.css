@@ -1,26 +1,16 @@
 /* =============================================================================
    MASTER DRONE EXPLODER — WORLD-CLASS MOTION & RENDERING
-   =============================================================================
-   • Spring-physics scroll interpolation (see JSX)
-   • Dynamic depth: parallax scale, blur, opacity, shadow spread
-   • High-DPI asset rendering: crisp-edges, optimizeQuality, pixelated
-   • Reduced-motion: instant snap, no animation
-   • GPU-accelerated layers via will-change + transform3d
    ============================================================================= */
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   CONTAINER & LAYOUT
-   ───────────────────────────────────────────────────────────────────────────── */
+/* ─── CONTAINER & LAYOUT ─────────────────────────────────────────────────── */
 .drone-exploder-container {
-    /* 400vh = 4× viewport height scroll distance for generous animation runway */
     height: 400vh;
     width: 100%;
     position: relative;
     background-color: #030705;
     color: #fff;
-    font-family: 'DM Mono', 'Rajdhani', 'Share Tech Mono', monospace;
+    font-family: 'DM Mono', 'Share Tech Mono', monospace;
     overflow: clip;
-    /* Prevent rubber-band scrolling on iOS from breaking sticky */
     overscroll-behavior: none;
 }
 
@@ -33,16 +23,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Deep space radial gradient — matches engineering aesthetic */
     background: radial-gradient(ellipse at 50% 45%, #0a1f12 0%, #050a07 50%, #030705 100%);
-    /* Force GPU layer for the entire sticky region */
     transform: translateZ(0);
-    will-change: transform;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   SVG STAGE — HIGH-RES RENDERING RULES
-   ───────────────────────────────────────────────────────────────────────────── */
+/* ─── SVG STAGE ───────────────────────────────────────────────────────────── */
 .drone-svg-stage {
     width: 100%;
     height: 100%;
@@ -50,51 +35,30 @@
     max-height: 100vh;
     position: absolute;
     z-index: 1;
-    /* 
-     CRITICAL: These three properties ensure the browser uses the highest-
-     quality downscaling algorithm for @2x/@3x assets rendered at display size.
-     - optimizeQuality: standard hint
-     - crisp-edges: preserves hard edges (technical line art)
-     - pixelated: nearest-neighbor fallback (avoids bilinear blur on some engines)
-  */
-    image-rendering: optimizeQuality;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
-    image-rendering: pixelated;
-    /* Prevent sub-pixel antialiasing on the SVG root */
     shape-rendering: geometricPrecision;
     text-rendering: geometricPrecision;
 }
 
-/* Every drone asset image — inherits stage rules + extra sharpness */
 .drone-asset {
-    image-rendering: optimizeQuality;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
-    image-rendering: pixelated;
-    /* Hardware acceleration */
     transform: translateZ(0);
     backface-visibility: hidden;
 }
 
-/* Camera group — single transform for zoom/pan (performance) */
 .drone-camera {
     will-change: transform;
-    transform-style: preserve-3d;
 }
 
-/* Base layer styles — shared by all 4 components */
 .drone-layer {
     will-change: transform, opacity, filter;
-    transform-style: preserve-3d;
-    /* Each layer gets its own GPU compositor layer */
     transform: translateZ(0);
     backface-visibility: hidden;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   HUD — ENGINEERING TYPOGRAPHY
-   ───────────────────────────────────────────────────────────────────────────── */
+/* ─── HUD ──────────────────────────────────────────────────────────────────── */
 .drone-hud {
     position: absolute;
     top: 40px;
@@ -106,10 +70,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    /* Sub-pixel antialiasing for monospace readability */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
 }
 
 .drone-hud-title {
@@ -128,7 +90,6 @@
     letter-spacing: 2px;
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
     line-height: 1.1;
-    /* Smooth phase transitions */
     transition: opacity 0.15s ease-out, transform 0.15s ease-out;
 }
 
@@ -140,13 +101,10 @@
     text-shadow: 0 0 10px rgba(201, 232, 123, 0.3);
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   SIDE PANELS (ENV / COUNT)
-   ───────────────────────────────────────────────────────────────────────────── */
+/* ─── SIDE PANELS ──────────────────────────────────────────────────────────── */
 .drone-env-panel {
     position: absolute;
     top: 90px;
-    /* Clears 68px fixed header */
     right: 100px;
     z-index: 10;
     pointer-events: none;
@@ -155,7 +113,6 @@
     border-radius: 4px;
     background: rgba(10, 13, 13, 0.85);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     font-family: 'DM Mono', monospace;
     max-width: 280px;
     -webkit-font-smoothing: antialiased;
@@ -172,146 +129,54 @@
     border-radius: 4px;
     background: rgba(10, 13, 13, 0.85);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     font-family: 'DM Mono', monospace;
     -webkit-font-smoothing: antialiased;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   BACKGROUND GRID OVERLAY (subtle engineering texture)
-   ───────────────────────────────────────────────────────────────────────────── */
+/* ─── BACKGROUND GRID ──────────────────────────────────────────────────────── */
 .drone-sticky-wrapper::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background-image:
         linear-gradient(rgba(88, 211, 255, 0.025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(88, 211, 255, 0.025) 1px, transparent 1px);
     background-size: 50px 50px;
-    background-position: center center;
+    background-position: center;
     z-index: 0;
     pointer-events: none;
     mask-image: radial-gradient(circle at center, black 15%, transparent 70%);
     -webkit-mask-image: radial-gradient(circle at center, black 15%, transparent 70%);
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   REDUCED MOTION — INSTANT STATE, NO ANIMATION
-   ───────────────────────────────────────────────────────────────────────────── */
+/* ─── REDUCED MOTION ───────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-    .drone-exploder-container {
-        height: 100vh;
-        /* Collapse scroll runway */
-    }
-
-    .drone-sticky-wrapper {
-        position: relative;
-        /* Disable sticky */
-        height: auto;
-        min-height: 100vh;
-    }
-
-    .drone-camera,
-    .drone-layer {
-        transition: none !important;
-        animation: none !important;
-    }
-
-    .drone-hud-phase,
-    .drone-hud-detail {
-        transition: none !important;
-    }
+    .drone-exploder-container { height: 100vh; }
+    .drone-sticky-wrapper { position: relative; height: auto; min-height: 100vh; }
+    .drone-camera, .drone-layer { transition: none !important; animation: none !important; }
+    .drone-hud-phase, .drone-hud-detail { transition: none !important; }
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   RESPONSIVE — MOBILE / TABLET
-   ───────────────────────────────────────────────────────────────────────────── */
+/* ─── RESPONSIVE ───────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-    .drone-hud {
-        top: 20px;
-        left: 16px;
-    }
-
-    .drone-hud-phase {
-        font-size: 1.2rem;
-    }
-
-    .drone-env-panel,
-    .drone-count-panel {
-        display: none;
-        /* Reduce clutter on small screens */
-    }
-
-    /* Reduce scroll runway on mobile (less thumb travel) */
-    .drone-exploder-container {
-        height: 300vh;
-    }
+    .drone-hud { top: 20px; left: 16px; }
+    .drone-hud-phase { font-size: 1.2rem; }
+    .drone-env-panel, .drone-count-panel { display: none; }
+    .drone-exploder-container { height: 300vh; }
 }
 
 @media (max-width: 600px) {
-    .drone-exploder-container {
-        height: 250vh;
-    }
-
-    .drone-hud-title {
-        font-size: 0.65rem;
-    }
-
-    .drone-hud-phase {
-        font-size: 1rem;
-    }
-
-    .drone-hud-detail {
-        font-size: 0.7rem;
-    }
+    .drone-exploder-container { height: 250vh; }
+    .drone-hud-title { font-size: 0.65rem; }
+    .drone-hud-phase { font-size: 1rem; }
+    .drone-hud-detail { font-size: 0.7rem; }
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   HIGH-DPI DISPLAY OVERRIDES (Retina, 4K, 5K)
-   ───────────────────────────────────────────────────────────────────────────── */
-@media (-webkit-min-device-pixel-ratio: 2),
-(min-resolution: 192dpi),
-(min-resolution: 2dppx) {
-
-    /* On @2x+ displays, the browser will downsample our @2x assets.
-     The crisp-edges/pixelated rules above prevent bilinear blur. */
-    .drone-svg-stage,
-    .drone-asset {
-        image-rendering: crisp-edges;
-        image-rendering: pixelated;
-    }
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   PRINT / EXPORT — Hide animation, show assembled state
-   ───────────────────────────────────────────────────────────────────────────── */
+/* ─── PRINT ────────────────────────────────────────────────────────────────── */
 @media print {
-    .drone-exploder-container {
-        height: auto !important;
-        page-break-inside: avoid;
-    }
-
-    .drone-sticky-wrapper {
-        position: relative !important;
-        height: auto !important;
-    }
-
-    .drone-camera {
-        transform: none !important;
-    }
-
-    .drone-layer {
-        transform: none !important;
-        opacity: 1 !important;
-        filter: none !important;
-    }
-
-    .drone-hud,
-    .drone-env-panel,
-    .drone-count-panel {
-        display: none !important;
-    }
+    .drone-exploder-container { height: auto !important; page-break-inside: avoid; }
+    .drone-sticky-wrapper { position: relative !important; height: auto !important; }
+    .drone-camera { transform: none !important; }
+    .drone-layer { transform: none !important; opacity: 1 !important; filter: none !important; }
+    .drone-hud, .drone-env-panel, .drone-count-panel { display: none !important; }
 }
