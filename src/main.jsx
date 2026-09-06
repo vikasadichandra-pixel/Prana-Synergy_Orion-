@@ -65,7 +65,7 @@ function App() {
 
           <section className="complete">
             <p>{scenes.length} / COMPLETE SYSTEM</p>
-            <h2>ONE SYSTEM.<br />MANY LAYERS<br />OF PROTECTION.</h2>
+            <h2>NOT AN ARMOUR<br />NOT A PATCH.<br />A BREATHE</h2>
             <div>
               {['CONTROL', 'POWER', 'SENSORS', 'THERMAL', 'COMMUNICATION', 'PROTECTION', 'DATA'].map(item => (
                 <span key={item}>{item}</span>
