@@ -4,7 +4,7 @@ const byId = Object.fromEntries(components.map(component => [component.id, compo
 const withComponent = (id, extra = {}) => ({ ...byId[id], ...extra, kind: 'component' });
 
 export const scenes = [
-  withComponent('esp32', { index: '01', category: 'CONTROL', title: 'ESP32', role: 'MAIN CONTROLLER', description: 'The central processing unit responsible for monitoring sensors and coordinating system operations.', explodedImage: './components/esp32-exploded.png', layers: ['RF MODULE', 'PIN HEADERS', 'MAIN PCB', 'USB / BASE INTERFACE'] }),
+  withComponent('esp32', { index: '01', category: 'CONTROL', title: 'ESP32', role: 'MAIN CONTROLLER', description: 'The central processing unit responsible for monitoring sensors and coordinating system operations.', explodedImage: '/PRANA_SynergyOrion/components/esp32-exploded.png', layers: ['RF MODULE', 'PIN HEADERS', 'MAIN PCB', 'USB / BASE INTERFACE'] }),
   withComponent('microsd', { index: '02', category: 'DATA', title: 'MICROSD', role: 'LOCAL DATA STORAGE', description: 'Local storage for telemetry, diagnostics and historical system data.', layers: ['CARD FACE', 'CONTACT ARRAY', 'STORAGE BODY'] }),
   withComponent('display', { index: '03', category: 'DATA', title: 'ILI9341\nDISPLAY', role: 'VISUAL OUTPUT INTERFACE', description: '2.8" SPI TFT display module for local status output, diagnostics overlay, and real-time telemetry visualization.', layers: ['FRONT BEZEL', 'TFT LCD PANEL', 'BACKLIGHT DIFFUSER', 'FPC RIBBON', 'DRIVER PCB'] }),
   withComponent('regulator', { index: '04', category: 'POWER', title: 'VOLTAGE REGULATOR', role: 'POWER REGULATION', description: 'Conditions supply power before it reaches the system electronics.', layers: ['UPPER ASSEMBLY', 'REGULATOR BODY', 'LOWER INTERFACE'] }),

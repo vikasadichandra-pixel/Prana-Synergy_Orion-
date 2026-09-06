@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: './',
+  base: '/PRANA_SynergyOrion/',
   plugins: [react()],
   server: {
     host: '0.0.0.0',

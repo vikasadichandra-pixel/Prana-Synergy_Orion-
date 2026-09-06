@@ -273,28 +273,28 @@ export default function MasterDroneExploder() {
               {/* 1. BOTTOM: POWER VAULT */}
               <g ref={setRef('power')} className="drone-layer drone-power">
                 <g transform="scale(0.25)">
-                  <image href="./components/drone-slices/power_transparent.png" x={-320} y={-240} width={640} height={480} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
+                  <image href="/PRANA_SynergyOrion/components/drone-slices/power_transparent.png" x={-320} y={-240} width={640} height={480} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
                 </g>
               </g>
 
               {/* 2. MIDDLE: CORE LOGIC */}
               <g ref={setRef('coreWrapper')} className="drone-layer drone-core">
                 <g transform="scale(0.25)">
-                  <image href="./components/drone-slices/core_transparent.png" x={-520} y={-360} width={1040} height={720} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
+                  <image href="/PRANA_SynergyOrion/components/drone-slices/core_transparent.png" x={-520} y={-360} width={1040} height={720} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
                 </g>
               </g>
 
               {/* 3. UPPER-MID: HEATPIPE */}
               <g ref={setRef('heatpipe')} className="drone-layer drone-heatpipe">
                 <g transform="scale(0.25)">
-                  <image href="./components/drone-slices/heatpipe.png" x={-440} y={-300} width={880} height={600} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
+                  <image href="/PRANA_SynergyOrion/components/drone-slices/heatpipe.png" x={-440} y={-300} width={880} height={600} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
                 </g>
               </g>
 
               {/* 4. TOP: CROWN */}
               <g ref={setRef('crown')} className="drone-layer drone-crown">
                 <g transform="scale(0.25)">
-                  <image href="./components/drone-slices/crown_transparent.png" x={-1600} y={-1200} width={3200} height={2400} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
+                  <image href="/PRANA_SynergyOrion/components/drone-slices/crown_transparent.png" x={-1600} y={-1200} width={3200} height={2400} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
                 </g>
               </g>
 
