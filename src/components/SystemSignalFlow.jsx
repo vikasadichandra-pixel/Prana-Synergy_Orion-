@@ -8,6 +8,7 @@ import {
   nodeById,
 } from '../data/signalFlow';
 import './SystemSignalFlow.css';
+import './SystemSignalFlowRefinement.css';
 
 const AUTO_TRACE = ['battery', 'converter', 'esp32', 'env-sensor', 'lora', 'antenna', 'heat-pipe'];
 
@@ -45,22 +46,22 @@ function traceNetwork(selectedId, edges, mode) {
   return { edgeIds, nodeIds };
 }
 
-function EdgeLabel({ edge, path }) {
+function EdgeLabel({ edge }) {
   const from = nodeById[edge.from];
   const to = nodeById[edge.to];
   const x = (from.x + to.x) / 2;
   const y = (from.y + to.y) / 2;
   return (
     <g className="signal-edge-label" aria-hidden="true">
-      <rect x={x - 58} y={y - 10} width="116" height="20" rx="5" />
-      <text x={x} y={y + 2.5}>{edge.label}</text>
+      <rect x={x - 66} y={y - 12} width="132" height="24" rx="6" />
+      <text x={x} y={y + 3.5}>{edge.label}</text>
     </g>
   );
 }
 
 function SignalNode({ node, selected, active, muted, onSelect }) {
-  const width = node.primary ? 188 : 154;
-  const height = node.primary ? 68 : 56;
+  const width = node.primary ? 210 : 172;
+  const height = node.primary ? 76 : 62;
   return (
     <g
       className={`signal-node ${node.primary ? 'is-primary' : ''} ${selected ? 'is-selected' : ''} ${active ? 'is-active' : ''} ${muted ? 'is-muted' : ''}`}
@@ -76,16 +77,16 @@ function SignalNode({ node, selected, active, muted, onSelect }) {
         }
       }}
     >
-      {node.primary && <circle className="signal-node-orbit orbit-a" r="66" />}
-      {node.primary && <circle className="signal-node-orbit orbit-b" r="82" />}
+      {node.primary && <circle className="signal-node-orbit orbit-a" r="74" />}
+      {node.primary && <circle className="signal-node-orbit orbit-b" r="94" />}
       <rect className="signal-node-hit" x={-width / 2 - 10} y={-height / 2 - 10} width={width + 20} height={height + 20} rx="14" />
       <rect className="signal-node-shell" x={-width / 2} y={-height / 2} width={width} height={height} rx={node.primary ? 12 : 9} />
       <path className="signal-node-corner tl" d={`M ${-width/2 + 10} ${-height/2} h 18 M ${-width/2} ${-height/2 + 10} v 18`} />
       <path className="signal-node-corner br" d={`M ${width/2 - 10} ${height/2} h -18 M ${width/2} ${height/2 - 10} v -18`} />
-      <circle className="signal-node-status" cx={-width / 2 + 16} cy={-height / 2 + 15} r="3.2" />
-      <text className="signal-node-domain" x={-width / 2 + 27} y={-height / 2 + 18}>{node.domain}</text>
-      <text className="signal-node-name" x="0" y={node.primary ? 8 : 7}>{node.short}</text>
-      {node.primary && <text className="signal-node-sub" x="0" y="25">SYSTEM ORCHESTRATOR</text>}
+      <circle className="signal-node-status" cx={-width / 2 + 16} cy={-height / 2 + 15} r="3.5" />
+      <text className="signal-node-domain" x={-width / 2 + 28} y={-height / 2 + 19}>{node.domain}</text>
+      <text className="signal-node-name" x="0" y={node.primary ? 8 : 8}>{node.short}</text>
+      {node.primary && <text className="signal-node-sub" x="0" y="28">SYSTEM ORCHESTRATOR</text>}
     </g>
   );
 }
@@ -128,7 +129,7 @@ export default function SystemSignalFlow() {
     <section id="signal-flow" className="signal-flow" aria-label="Interactive PRANA system signal topology">
       <div className="signal-flow-atmosphere" aria-hidden="true"><i /><i /><b /></div>
 
-      <header className="signal-flow-heading">
+      <div className="signal-flow-heading">
         <div>
           <p>PRĀŅA / DIGITAL TWIN <span>◆</span> LIVE TOPOLOGY</p>
           <h2>SEE THE SYSTEM<br /><em>THINK.</em></h2>
@@ -137,7 +138,7 @@ export default function SystemSignalFlow() {
           <span>INTERACTIVE SIGNAL ARCHITECTURE</span>
           <p>Trace power, sensor data, control commands, RF paths and thermal transfer across the complete flight system. Select any subsystem to isolate its live relationships.</p>
         </div>
-      </header>
+      </div>
 
       <div className="signal-flow-toolbar" role="toolbar" aria-label="Signal topology filters">
         <div className="signal-flow-modes">
@@ -160,7 +161,7 @@ export default function SystemSignalFlow() {
           onClick={() => setAutoTrace(value => !value)}
           aria-pressed={autoTrace}
         >
-          {autoTrace ? <Pause size={13} /> : <Play size={13} />}
+          {autoTrace ? <Pause size={14} /> : <Play size={14} />}
           AUTO TRACE
         </button>
       </div>
@@ -168,7 +169,7 @@ export default function SystemSignalFlow() {
       <div className="signal-flow-shell">
         <div className="signal-flow-stage" aria-label="System topology graph">
           <div className="signal-stage-chrome" aria-hidden="true">
-            <span>GRAPH / 18 NODES</span><span>VECTOR BUS MAP / REV 01</span>
+            <span>GRAPH / 18 NODES</span><span>VECTOR BUS MAP / REV 02</span>
           </div>
           <svg viewBox="0 0 1640 850" preserveAspectRatio="xMidYMid meet" role="img" aria-label="PRANA signal flow map. Select a subsystem to trace connections.">
             <defs>
@@ -201,10 +202,10 @@ export default function SystemSignalFlow() {
                     <path className="signal-edge-base" d={path} />
                     {active && <>
                       <path className="signal-edge-live" d={path} style={{ stroke: SIGNAL_COLORS[edge.kind] }} markerEnd={`url(#arrow-${edge.kind})`} />
-                      <circle className="signal-pulse" r="4" fill={SIGNAL_COLORS[edge.kind]} filter="url(#signal-glow)">
+                      <circle className="signal-pulse" r="4.5" fill={SIGNAL_COLORS[edge.kind]} filter="url(#signal-glow)">
                         <animateMotion dur={edge.kind === 'data' ? '1.7s' : edge.kind === 'rf' ? '2.35s' : '2.05s'} repeatCount="indefinite" path={path} />
                       </circle>
-                      <EdgeLabel edge={edge} path={path} />
+                      <EdgeLabel edge={edge} />
                     </>}
                   </g>
                 );
@@ -233,7 +234,7 @@ export default function SystemSignalFlow() {
         <aside className="signal-inspector" aria-live="polite">
           <div className="signal-inspector-top">
             <p>SELECTED SUBSYSTEM</p>
-            <button type="button" aria-label="Reset signal flow selection" onClick={() => { setSelectedId('esp32'); setMode('all'); setAutoTrace(false); setAutoIndex(0); }}><RotateCcw size={14} /></button>
+            <button type="button" aria-label="Reset signal flow selection" onClick={() => { setSelectedId('esp32'); setMode('all'); setAutoTrace(false); setAutoIndex(0); }}><RotateCcw size={15} /></button>
           </div>
           <span className="signal-inspector-index">COMP / {selected.scene}</span>
           <h3>{selected.label}</h3>
@@ -258,24 +259,24 @@ export default function SystemSignalFlow() {
               return <button key={edge.id} type="button" onClick={() => selectNode(peer.id)}>
                 <i style={{ background: SIGNAL_COLORS[edge.kind] }} />
                 <span><b>{peer.short}</b><small>{edge.label}</small></span>
-                <ArrowDownRight size={13} />
+                <ArrowDownRight size={14} />
               </button>;
             })}
           </div>
 
           <a className="signal-inspect-link" href={`#scene-${selected.scene}`}>
-            INSPECT COMPONENT <ArrowDownRight size={14} />
+            INSPECT COMPONENT <ArrowDownRight size={15} />
           </a>
         </aside>
       </div>
 
-      <footer className="signal-flow-footer">
+      <div className="signal-flow-footer">
         <span>POWER / DATA / CONTROL / RF / THERMAL</span>
         <span className="signal-flow-legend">
           {Object.entries(SIGNAL_COLORS).map(([kind, color]) => <i key={kind}><b style={{ background: color }} />{kind}</i>)}
         </span>
         <span>TOPOLOGY STATUS / NOMINAL</span>
-      </footer>
+      </div>
     </section>
   );
 }
