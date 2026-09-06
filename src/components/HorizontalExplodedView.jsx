@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 const COMPONENT_CUTOUT_MAP = {
   esp32: {
     prefix: 'esp32',
-    cutout: '/components/cutouts/esp32.png',
+    cutout: './components/cutouts/esp32.png',
     slices: [
-      '/components/slices/esp32-left.png',
-      '/components/slices/esp32-center.png',
-      '/components/slices/esp32-right.png'
+      './components/slices/esp32-left.png',
+      './components/slices/esp32-center.png',
+      './components/slices/esp32-right.png'
     ],
     baseW: 220,
     baseH: 420,
@@ -15,11 +15,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   microsd: {
     prefix: 'microsd',
-    cutout: '/components/cutouts/microsd.png',
+    cutout: './components/cutouts/microsd.png',
     slices: [
-      '/components/slices/microsd-left.png',
-      '/components/slices/microsd-center.png',
-      '/components/slices/microsd-right.png'
+      './components/slices/microsd-left.png',
+      './components/slices/microsd-center.png',
+      './components/slices/microsd-right.png'
     ],
     baseW: 340,
     baseH: 248,
@@ -27,11 +27,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   regulator: {
     prefix: 'voltage-regulator',
-    cutout: '/components/cutouts/voltage-regulator.png',
+    cutout: './components/cutouts/voltage-regulator.png',
     slices: [
-      '/components/slices/voltage-regulator-left.png',
-      '/components/slices/voltage-regulator-center.png',
-      '/components/slices/voltage-regulator-right.png'
+      './components/slices/voltage-regulator-left.png',
+      './components/slices/voltage-regulator-center.png',
+      './components/slices/voltage-regulator-right.png'
     ],
     baseW: 320,
     baseH: 312,
@@ -39,11 +39,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   thermistor: {
     prefix: 'thermistor',
-    cutout: '/components/cutouts/thermistor.png',
+    cutout: './components/cutouts/thermistor.png',
     slices: [
-      '/components/slices/thermistor-left.png',
-      '/components/slices/thermistor-center.png',
-      '/components/slices/thermistor-right.png'
+      './components/slices/thermistor-left.png',
+      './components/slices/thermistor-center.png',
+      './components/slices/thermistor-right.png'
     ],
     baseW: 210,
     baseH: 345,
@@ -51,11 +51,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   'battery-sensor': {
     prefix: 'battery-voltage-sensor',
-    cutout: '/components/cutouts/battery-voltage-sensor.png',
+    cutout: './components/cutouts/battery-voltage-sensor.png',
     slices: [
-      '/components/slices/battery-voltage-sensor-left.png',
-      '/components/slices/battery-voltage-sensor-center.png',
-      '/components/slices/battery-voltage-sensor-right.png'
+      './components/slices/battery-voltage-sensor-left.png',
+      './components/slices/battery-voltage-sensor-center.png',
+      './components/slices/battery-voltage-sensor-right.png'
     ],
     baseW: 350,
     baseH: 305,
@@ -63,11 +63,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   'rf-sensor': {
     prefix: 'rf-sensor',
-    cutout: '/components/cutouts/rf-sensor.png',
+    cutout: './components/cutouts/rf-sensor.png',
     slices: [
-      '/components/slices/rf-sensor-left.png',
-      '/components/slices/rf-sensor-center.png',
-      '/components/slices/rf-sensor-right.png'
+      './components/slices/rf-sensor-left.png',
+      './components/slices/rf-sensor-center.png',
+      './components/slices/rf-sensor-right.png'
     ],
     baseW: 330,
     baseH: 297,
@@ -75,11 +75,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   battery: {
     prefix: 'battery-pack',
-    cutout: '/components/cutouts/battery-pack.png',
+    cutout: './components/cutouts/battery-pack.png',
     slices: [
-      '/components/slices/battery-pack-left.png',
-      '/components/slices/battery-pack-center.png',
-      '/components/slices/battery-pack-right.png'
+      './components/slices/battery-pack-left.png',
+      './components/slices/battery-pack-center.png',
+      './components/slices/battery-pack-right.png'
     ],
     baseW: 340,
     baseH: 305,
@@ -87,11 +87,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   mosfet: {
     prefix: 'mosfet',
-    cutout: '/components/cutouts/mosfet.png',
+    cutout: './components/cutouts/mosfet.png',
     slices: [
-      '/components/slices/mosfet-left.png',
-      '/components/slices/mosfet-center.png',
-      '/components/slices/mosfet-right.png'
+      './components/slices/mosfet-left.png',
+      './components/slices/mosfet-center.png',
+      './components/slices/mosfet-right.png'
     ],
     baseW: 330,
     baseH: 275,
@@ -99,11 +99,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   'temp-sensor': {
     prefix: 'temperature-sensor',
-    cutout: '/components/cutouts/temperature-sensor.png',
+    cutout: './components/cutouts/temperature-sensor.png',
     slices: [
-      '/components/slices/temperature-sensor-left.png',
-      '/components/slices/temperature-sensor-center.png',
-      '/components/slices/temperature-sensor-right.png'
+      './components/slices/temperature-sensor-left.png',
+      './components/slices/temperature-sensor-center.png',
+      './components/slices/temperature-sensor-right.png'
     ],
     baseW: 280,
     baseH: 337,
@@ -111,11 +111,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   converter: {
     prefix: 'dc-dc-converter',
-    cutout: '/components/cutouts/dc-dc-converter.png',
+    cutout: './components/cutouts/dc-dc-converter.png',
     slices: [
-      '/components/slices/dc-dc-converter-left.png',
-      '/components/slices/dc-dc-converter-center.png',
-      '/components/slices/dc-dc-converter-right.png'
+      './components/slices/dc-dc-converter-left.png',
+      './components/slices/dc-dc-converter-center.png',
+      './components/slices/dc-dc-converter-right.png'
     ],
     baseW: 350,
     baseH: 284,
@@ -123,11 +123,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   'heat-pipe': {
     prefix: 'heat-pipe',
-    cutout: '/components/cutouts/heat-pipe.png',
+    cutout: './components/cutouts/heat-pipe.png',
     slices: [
-      '/components/slices/heat-pipe-left.png',
-      '/components/slices/heat-pipe-center.png',
-      '/components/slices/heat-pipe-right.png'
+      './components/slices/heat-pipe-left.png',
+      './components/slices/heat-pipe-center.png',
+      './components/slices/heat-pipe-right.png'
     ],
     baseW: 390,
     baseH: 205,
@@ -135,11 +135,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   radiator: {
     prefix: 'radiator',
-    cutout: '/components/cutouts/radiator.png',
+    cutout: './components/cutouts/radiator.png',
     slices: [
-      '/components/slices/radiator-left.png',
-      '/components/slices/radiator-center.png',
-      '/components/slices/radiator-right.png'
+      './components/slices/radiator-left.png',
+      './components/slices/radiator-center.png',
+      './components/slices/radiator-right.png'
     ],
     baseW: 340,
     baseH: 300,
@@ -147,11 +147,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   structure: {
     prefix: 'aluminium-structure',
-    cutout: '/components/cutouts/aluminium-structure.png',
+    cutout: './components/cutouts/aluminium-structure.png',
     slices: [
-      '/components/slices/aluminium-structure-left.png',
-      '/components/slices/aluminium-structure-center.png',
-      '/components/slices/aluminium-structure-right.png'
+      './components/slices/aluminium-structure-left.png',
+      './components/slices/aluminium-structure-center.png',
+      './components/slices/aluminium-structure-right.png'
     ],
     baseW: 380,
     baseH: 295,
@@ -159,11 +159,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   lora: {
     prefix: 'lora-module',
-    cutout: '/components/cutouts/lora-module.png',
+    cutout: './components/cutouts/lora-module.png',
     slices: [
-      '/components/slices/lora-module-left.png',
-      '/components/slices/lora-module-center.png',
-      '/components/slices/lora-module-right.png'
+      './components/slices/lora-module-left.png',
+      './components/slices/lora-module-center.png',
+      './components/slices/lora-module-right.png'
     ],
     baseW: 320,
     baseH: 331,
@@ -171,11 +171,11 @@ const COMPONENT_CUTOUT_MAP = {
   },
   antenna: {
     prefix: 'antenna',
-    cutout: '/components/cutouts/antenna.png',
+    cutout: './components/cutouts/antenna.png',
     slices: [
-      '/components/slices/antenna-left.png',
-      '/components/slices/antenna-center.png',
-      '/components/slices/antenna-right.png'
+      './components/slices/antenna-left.png',
+      './components/slices/antenna-center.png',
+      './components/slices/antenna-right.png'
     ],
     baseW: 220,
     baseH: 356,
@@ -188,11 +188,11 @@ export default function HorizontalExplodedView({ scene, scrollProgress = 0, isSc
 
   const config = COMPONENT_CUTOUT_MAP[scene.id] || {
     prefix: 'microsd',
-    cutout: scene.image || '/components/cutouts/microsd.png',
+    cutout: scene.image || './components/cutouts/microsd.png',
     slices: [
-      '/components/slices/microsd-left.png',
-      '/components/slices/microsd-center.png',
-      '/components/slices/microsd-right.png'
+      './components/slices/microsd-left.png',
+      './components/slices/microsd-center.png',
+      './components/slices/microsd-right.png'
     ],
     baseW: 320,
     baseH: 280,
