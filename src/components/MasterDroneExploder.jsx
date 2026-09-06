@@ -17,70 +17,70 @@ const smoothStep = (progress, start, end, easingFn = easeInOutCubic) => {
 // WEBGL 3D PARTICLE FIELD (Interactive Background)
 // ──────────────────────────────────────────────────────────────────────────────
 const ParticleFieldBackground = memo(({ scrollRef }) => {
-    const ref = useRef();
-    
-    const [positions, colors] = useMemo(() => {
-        const count = 3000;
-        const pos = new Float32Array(count * 3);
-        const col = new Float32Array(count * 3);
-        const color1 = new THREE.Color('#c9e87b');
-        const color2 = new THREE.Color('#58d3ff');
-        const mixed = new THREE.Color();
+  const ref = useRef();
 
-        for (let i = 0; i < count; i++) {
-            const r = 30 * Math.cbrt(Math.random());
-            const theta = Math.random() * 2 * Math.PI;
-            const phi = Math.acos(2 * Math.random() - 1);
-            
-            pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-            pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-            pos[i * 3 + 2] = r * Math.cos(phi);
+  const [positions, colors] = useMemo(() => {
+    const count = 3000;
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    const color1 = new THREE.Color('#c9e87b');
+    const color2 = new THREE.Color('#58d3ff');
+    const mixed = new THREE.Color();
 
-            mixed.copy(color1).lerp(color2, Math.sin(pos[i * 3 + 1] * 0.5) * 0.5 + 0.5);
-            col[i * 3] = mixed.r;
-            col[i * 3 + 1] = mixed.g;
-            col[i * 3 + 2] = mixed.b;
-        }
-        return [pos, col];
-    }, []);
+    for (let i = 0; i < count; i++) {
+      const r = 30 * Math.cbrt(Math.random());
+      const theta = Math.random() * 2 * Math.PI;
+      const phi = Math.acos(2 * Math.random() - 1);
 
-    useFrame((state) => {
-        const points = ref.current;
-        if (!points) return;
-        const dt = Math.min(state.clock.getDelta(), .05);
-        points.rotation.y += dt * 0.05;
-        points.rotation.x += dt * 0.02;
+      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i * 3 + 2] = r * Math.cos(phi);
 
-        const t = state.clock.elapsedTime;
-        const breath = Math.sin(t * 6.0);
-        points.scale.setScalar(1 + breath * 0.06);
-        points.material.opacity = 0.4 + breath * 0.2;
+      mixed.copy(color1).lerp(color2, Math.sin(pos[i * 3 + 1] * 0.5) * 0.5 + 0.5);
+      col[i * 3] = mixed.r;
+      col[i * 3 + 1] = mixed.g;
+      col[i * 3 + 2] = mixed.b;
+    }
+    return [pos, col];
+  }, []);
 
-        if (scrollRef?.current) {
-            const p = scrollRef.current.current;
-            points.position.z = p * 8;
-            points.rotation.z = p * 0.2;
-        }
-    });
+  useFrame((state) => {
+    const points = ref.current;
+    if (!points) return;
+    const dt = Math.min(state.clock.getDelta(), .05);
+    points.rotation.y += dt * 0.05;
+    points.rotation.x += dt * 0.02;
 
-    return (
-        <points ref={ref}>
-            <bufferGeometry>
-                <bufferAttribute attach="attributes-position" count={positions.length / 3} array={positions} itemSize={3} />
-                <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
-            </bufferGeometry>
-            <pointsMaterial size={0.06} vertexColors transparent opacity={0.3} sizeAttenuation depthWrite={false} blending={THREE.AdditiveBlending} />
-        </points>
-    );
+    const t = state.clock.elapsedTime;
+    const breath = Math.sin(t * 6.0);
+    points.scale.setScalar(1 + breath * 0.06);
+    points.material.opacity = 0.4 + breath * 0.2;
+
+    if (scrollRef?.current) {
+      const p = scrollRef.current.current;
+      points.position.z = p * 8;
+      points.rotation.z = p * 0.2;
+    }
+  });
+
+  return (
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={positions.length / 3} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
+      </bufferGeometry>
+      <pointsMaterial size={0.06} vertexColors transparent opacity={0.3} sizeAttenuation depthWrite={false} blending={THREE.AdditiveBlending} />
+    </points>
+  );
 });
 
 const HUD_TEXT = [
-    { title: 'PRĀŅA HOMEOSTATIC DRONE', detail: 'SCROLL TO BEGIN DEEP INSPECTION', sub: 'Fully Assembled · 34 Components', count: '34' },
-    { title: 'PHASE I · MACRO DISAGGREGATION', detail: '4 PRIMARY LAYERS SEPARATING', sub: 'Crown · Heatpipe · Core · Power Vault', count: '4' },
-    { title: 'FOCUS: RADIATIVE CROWN', detail: 'AEROSPACE GRADE PROTECTION', sub: 'Camera Zoom Engaged', count: '1' },
-    { title: 'FOCUS: THERMAL HEATPIPE', detail: 'PASSIVE COOLING SYSTEM', sub: 'Heat Dissipation Layer', count: '1' },
-    { title: 'FOCUS: LOGIC CORE', detail: 'V4.1 COMPUTE ENGINE', sub: 'Sensors & Processing Unlocked', count: '1' },
-    { title: 'FOCUS: POWER VAULT', detail: 'HIGH DENSITY ENERGY STORAGE', sub: 'Solid State Battery Cell', count: '1' },
+  { title: 'PRĀŅA HOMEOSTATIC DRONE', detail: 'SCROLL TO BEGIN DEEP INSPECTION', sub: 'Fully Assembled · 34 Components', count: '34' },
+  { title: 'PHASE I · MACRO DISAGGREGATION', detail: '4 PRIMARY LAYERS SEPARATING', sub: 'Crown · Heatpipe · Core · Power Vault', count: '4' },
+  { title: 'FOCUS: RADIATIVE CROWN', detail: 'AEROSPACE GRADE PROTECTION', sub: 'Camera Zoom Engaged', count: '1' },
+  { title: 'FOCUS: THERMAL HEATPIPE', detail: 'PASSIVE COOLING SYSTEM', sub: 'Heat Dissipation Layer', count: '1' },
+  { title: 'FOCUS: LOGIC CORE', detail: 'V4.1 COMPUTE ENGINE', sub: 'Sensors & Processing Unlocked', count: '1' },
+  { title: 'FOCUS: POWER VAULT', detail: 'HIGH DENSITY ENERGY STORAGE', sub: 'Solid State Battery Cell', count: '1' },
 ];
 
 export default function MasterDroneExploder() {
@@ -273,28 +273,28 @@ export default function MasterDroneExploder() {
               {/* 1. BOTTOM: POWER VAULT */}
               <g ref={setRef('power')} className="drone-layer drone-power">
                 <g transform="scale(0.25)">
-                  <image href="/PRANA_SynergyOrion/components/drone-slices/power_transparent.png" x={-320} y={-240} width={640} height={480} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
+                  <image href="/Prana-Synergy_Orion-/components/drone-slices/power_transparent.png" x={-320} y={-240} width={640} height={480} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
                 </g>
               </g>
 
               {/* 2. MIDDLE: CORE LOGIC */}
               <g ref={setRef('coreWrapper')} className="drone-layer drone-core">
                 <g transform="scale(0.25)">
-                  <image href="/PRANA_SynergyOrion/components/drone-slices/core_transparent.png" x={-520} y={-360} width={1040} height={720} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
+                  <image href="/Prana-Synergy_Orion-/components/drone-slices/core_transparent.png" x={-520} y={-360} width={1040} height={720} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
                 </g>
               </g>
 
               {/* 3. UPPER-MID: HEATPIPE */}
               <g ref={setRef('heatpipe')} className="drone-layer drone-heatpipe">
                 <g transform="scale(0.25)">
-                  <image href="/PRANA_SynergyOrion/components/drone-slices/heatpipe.png" x={-440} y={-300} width={880} height={600} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
+                  <image href="/Prana-Synergy_Orion-/components/drone-slices/heatpipe.png" x={-440} y={-300} width={880} height={600} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
                 </g>
               </g>
 
               {/* 4. TOP: CROWN */}
               <g ref={setRef('crown')} className="drone-layer drone-crown">
                 <g transform="scale(0.25)">
-                  <image href="/PRANA_SynergyOrion/components/drone-slices/crown_transparent.png" x={-1600} y={-1200} width={3200} height={2400} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
+                  <image href="/Prana-Synergy_Orion-/components/drone-slices/crown_transparent.png" x={-1600} y={-1200} width={3200} height={2400} className="drone-asset" preserveAspectRatio="xMidYMid meet" />
                 </g>
               </g>
 
