@@ -787,3 +787,25 @@ dd {
     transform: translate(-50%, -50%) translateY(185px) !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CUSTOM NEON SCROLLBAR
+   ───────────────────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(201, 232, 123, 0.4);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 232, 123, 0.8);
+}
